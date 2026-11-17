@@ -1,0 +1,55 @@
+
+import type { Utilisateur } from "../types/utilisateur.types";
+
+export const utilisateursData: Utilisateur[] = [
+  {
+    id: 1,
+    displayName: "Mohamed Ben Ali",
+    userName: "mbenali",
+    mail: "mohamed@gmail.com",
+    password: "demo-password-1",
+    userCode: "USR-001",
+    isActive: true,
+    image: "https://i.pravatar.cc/120?img=12",
+  },
+  {
+    id: 2,
+    displayName: "Ahmed Trabelsi",
+    userName: "atrabelsi",
+    mail: "ahmed@gmail.com",
+    password: "demo-password-2",
+    userCode: "USR-002",
+    isActive: true,
+    image: "https://i.pravatar.cc/120?img=13",
+  },
+  {
+    id: 3,
+    displayName: "Fatma Mansouri",
+    userName: "fmansouri",
+    mail: "fatma@gmail.com",
+    password: "demo-password-3",
+    userCode: "USR-003",
+    isActive: false,
+    image: "https://i.pravatar.cc/120?img=47",
+  },
+  {
+    id: 4,
+    displayName: "Ali Gharbi",
+    userName: "agharbi",
+    mail: "ali@gmail.com",
+    password: "demo-password-4",
+    userCode: "USR-004",
+    isActive: true,
+    image: "https://i.pravatar.cc/120?img=14",
+  },
+  {
+    id: 5,
+    displayName: "Sami Kammoun",
+    userName: "skammoun",
+    mail: "sami@gmail.com",
+    password: "demo-password-5",
+    userCode: "USR-005",
+    isActive: false,
+    image: "https://i.pravatar.cc/120?img=15",
+  },
+];
