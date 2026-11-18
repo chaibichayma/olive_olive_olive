@@ -152,15 +152,15 @@ export default function ImageUploadField({
           `}
         >
           <ImagePlus
-            size={21}
+            size={23}
             className="text-[#47785B]"
           />
 
-          <span className="text-[9px] font-semibold">
+          <span className="text-[13px] font-semibold">
             Télécharger une image
           </span>
 
-          <span className="text-[8px]">
+          <span className="text-[12px] font-semibold">
             PNG, JPG ou WEBP
           </span>
         </label>
@@ -190,7 +190,7 @@ export default function ImageUploadField({
             inline-flex
             items-center
             gap-1
-            text-[9px]
+            text-[13px]
             font-semibold
             ${
               disabled
@@ -199,7 +199,7 @@ export default function ImageUploadField({
             }
           `}
         >
-          <Upload size={11} />
+          <Upload size={14} />
           Changer l'image
         </label>
       )}
@@ -207,3 +207,4 @@ export default function ImageUploadField({
     </div>
   );
 }
+

@@ -67,6 +67,8 @@ interface EntityFormProps {
   sections: FormSection[];
   initialValues?: FormValues;
   submitLabel?: string;
+  onValuesChange?: (values: FormValues) => FormValues | void;
+  extraContent?: ReactNode;
   onSubmit: (values: FormValues) => void;
   onCancel: () => void;
 }
@@ -82,8 +84,11 @@ export default function EntityForm({
   sections,
   initialValues = {},
   submitLabel = "Enregistrer",
+  onValuesChange,
+  extraContent,
   onSubmit,
   onCancel,
+  
 }: EntityFormProps) {
 
   const [values, setValues] = useState<FormValues>(initialValues);
@@ -101,11 +106,22 @@ export default function EntityForm({
   // ==========================================
 
   const handleChange = (name: string, value: string) => {
+  const updatedValues = {
+    ...values,
+    [name]: value,
+  };
+
+  setValues(updatedValues);
+
+  const additionalValues = onValuesChange?.(updatedValues);
+
+  if (additionalValues) {
     setValues((previous) => ({
       ...previous,
-      [name]: value,
+      ...additionalValues,
     }));
-  };
+  }
+};
 
   // ==========================================
   // SOUMETTRE LE FORMULAIRE
@@ -143,6 +159,7 @@ export default function EntityForm({
           onChange={handleChange}
         />
       ))}
+      {extraContent}
 
       {/* ACTIONS */}
 

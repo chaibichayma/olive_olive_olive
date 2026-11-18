@@ -22,6 +22,8 @@ interface FormPageLayoutProps {
   dateTitle?: string;
 
   submitLabel?: string;
+  onValuesChange?: (values: FormValues) => FormValues | void;
+  extraContent?: ReactNode;
 
   onSubmit: (values: FormValues) => void;
   onCancel: () => void;
@@ -35,6 +37,8 @@ export default function FormPageLayout({
   initialValues,
   dateValues,
   dateTitle,
+  onValuesChange,
+  extraContent,
   submitLabel = "Enregistrer",
   onSubmit,
   onCancel,
@@ -42,23 +46,19 @@ export default function FormPageLayout({
   return (
     <div className="space-y-5">
 
-      {dateValues && dateValues.length > 0 && (
-        <DateTimeSummary
-          title={dateTitle}
-          dates={dateValues}
-        />
-      )}
 
       <EntityForm
-        title={title}
-        description={description}
-        icon={icon}
-        sections={sections}
-        initialValues={initialValues}
-        submitLabel={submitLabel}
-        onSubmit={onSubmit}
-        onCancel={onCancel}
-      />
+  title={title}
+  description={description}
+  icon={icon}
+  sections={sections}
+  initialValues={initialValues}
+  submitLabel={submitLabel}
+  onSubmit={onSubmit}
+  onCancel={onCancel}
+  onValuesChange={onValuesChange}
+  extraContent={extraContent}
+/>
 
     </div>
   );

@@ -199,7 +199,7 @@ export default function Sidebar({
                         }`}
                       />
 
-                      <span className="text-[12px] font-semibold leading-5">
+                      <span className="text-[14px] font-semibold leading-5">
                         {item.label}
                       </span>
                     </>

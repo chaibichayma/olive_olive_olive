@@ -1,4 +1,5 @@
 
+
 import { useRef, useState } from "react";
 import { Save, X, AlertTriangle } from "lucide-react";
 
@@ -43,13 +44,14 @@ export default function FormActions({
     <>
       <div className="flex flex-wrap justify-end gap-2">
         <Button
-          type="button"
-          variant="outline"
-          size="md"
-          onClick={onCancel}
-        >
-          {cancelLabel}
-        </Button>
+  type="button"
+  variant="outline"
+  size="md"
+  onClick={onCancel}
+  className="!font-semibold !min-w-[150px]"
+>
+  {cancelLabel}
+</Button>
 
         <Button
           type="button"
@@ -57,6 +59,7 @@ export default function FormActions({
           size="md"
           leftIcon={<Save size={13} />}
           onClick={handleSubmitClick}
+          className="!font-semibold"
         >
           {submitLabel}
         </Button>
@@ -104,6 +107,7 @@ export default function FormActions({
             variant="outline"
             size="md"
             onClick={() => setIsModalOpen(false)}
+            className="!font-semibold"
           >
             Annuler
           </Button>
@@ -114,6 +118,7 @@ export default function FormActions({
             size="md"
             leftIcon={<Save size={13} />}
             onClick={handleConfirm}
+            className="!font-semibold"
           >
             Confirmer
           </Button>
@@ -122,4 +127,3 @@ export default function FormActions({
     </>
   );
 }
-

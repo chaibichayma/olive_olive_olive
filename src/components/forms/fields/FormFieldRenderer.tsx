@@ -10,24 +10,25 @@ import type {
 // ==========================================
 
 export const inputClassName = `
-  !h-[34px]
+  !h-[40px]
   !w-full
   !min-w-0
   !rounded-[7px]
   !border
   !border-[#E1E5EA]
   !bg-white
-  !px-2.5
+  !px-3
   !py-0
-  !text-[10px]
-  !font-normal
+  !text-[13px]
+  !font-semibold
   !leading-normal
-  !text-[#46534B]
+  !text-black
   !outline-none
   !shadow-none
   transition-all
   duration-200
-  placeholder:!text-[10px]
+  placeholder:!text-[12px]
+  placeholder:!font-semibold
   placeholder:!text-[#A0AAA3]
   hover:!border-[#C6D0C9]
   focus:!border-[#6D9B82]
@@ -71,7 +72,7 @@ export default function FormFieldRenderer({
         className="
           mb-1.5
           block
-          !text-[9px]
+          !text-[13px]
           !font-semibold
           !leading-normal
           text-[#344238]
@@ -80,7 +81,7 @@ export default function FormFieldRenderer({
         {field.label}
 
         {field.required && (
-          <span className="ml-1 text-red-500">
+          <span className="ml-1 text-[18px] font-bold text-red-500">
             *
           </span>
         )}
@@ -102,55 +103,63 @@ export default function FormFieldRenderer({
 
         /* SELECT */
 
-        <select
-          id={field.name}
-          name={field.name}
-          required={field.required}
-          disabled={field.disabled}
-          value={value}
-          onChange={(event) =>
-            onChange(field.name, event.target.value)
-          }
-          dir={field.direction}
-          className={inputClassName}
-        >
-          <option value="">
-            {field.placeholder ?? "Sélectionner"}
-          </option>
+       <select
+  id={field.name}
+  name={field.name}
+  required={field.required}
+  disabled={field.disabled}
+  value={value}
+  onChange={(event) =>
+    onChange(field.name, event.target.value)
+  }
+  dir={field.direction}
+  className={`
+    ${inputClassName}
+    !font-semibold
+    ${value === "" ? "!text-[#A0AAA3]" : "!text-[#46534B]"}
+  `}
+>
+  <option value="" className="font-semibold">
+    {field.placeholder ?? "Sélectionner"}
+  </option>
 
-          {field.options?.map((option) => (
-            <option
-              key={option.value}
-              value={option.value}
-            >
-              {option.label}
-            </option>
-          ))}
-        </select>
+  {field.options?.map((option) => (
+    <option
+      key={option.value}
+      value={option.value}
+      className="font-semibold text-[#46534B]"
+    >
+      {option.label}
+    </option>
+  ))}
+</select>
 
       ) : field.type === "textarea" ? (
 
         /* TEXTAREA */
 
         <textarea
-          id={field.name}
-          name={field.name}
-          required={field.required}
-          disabled={field.disabled}
-          placeholder={field.placeholder}
-          value={value}
-          onChange={(event) =>
-            onChange(field.name, event.target.value)
-          }
-          dir={field.direction ?? "auto"}
-          className={`
-            ${inputClassName}
-            !h-auto
-            !min-h-[75px]
-            !py-2
-            resize-y
-          `}
-        />
+  id={field.name}
+  name={field.name}
+  required={field.required}
+  disabled={field.disabled}
+  placeholder={field.placeholder}
+  value={value}
+  onChange={(event) =>
+    onChange(field.name, event.target.value)
+  }
+  dir={field.direction ?? "auto"}
+  className={`
+    ${inputClassName}
+    !h-auto
+    !min-h-[75px]
+    !py-2
+    !text-[12px]
+    !font-semibold
+    placeholder:!font-semibold
+    resize-y
+  `}
+/>
 
       ) : (
 
