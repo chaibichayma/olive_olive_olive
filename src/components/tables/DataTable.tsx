@@ -105,14 +105,14 @@ export default function DataTable<T>({
                   className={`
                     whitespace-nowrap
                     px-3 py-2
-                    text-[9px]
-                    font-bold
+                    text-[12px]
+                    font-semibold
                     uppercase
                     tracking-[0.02em]
                     text-[#77837B]
 
                     sm:px-3 sm:py-2
-                    sm:text-[10px]
+                    sm:text-[12px]
 
                     ${alignmentClasses[column.align ?? "left"]}
                     ${column.headerClassName ?? ""}

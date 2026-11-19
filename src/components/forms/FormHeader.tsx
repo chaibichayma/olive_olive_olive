@@ -37,7 +37,7 @@ export default function FormHeader({
         </div>
 
         {description && (
-          <p className="mt-1.5 max-w-2xl text-sm leading-5 text-[#7D8981]">
+          <p className="mt-1 text-[15px] font-semibold leading-5 text-[#7D8981]">
             {description}
           </p>
         )}

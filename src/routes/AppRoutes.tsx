@@ -13,6 +13,7 @@ import DashboardPage from "../pages/dashboard/DashboardPage";
 import { SignInPage } from "../auth/pages/signin-page";
 import { SignUpPage } from "../auth/pages/signup-page";
 import { ResetPasswordPage } from "../auth/pages/reset-password-page";
+import TraitementBasePage from "../pages/traitementBase/TraitementBasePage";
 
 // Pages temporaires pour les futurs modules
 function PlaceholderPage({ title }: { title: string }) {
@@ -55,6 +56,10 @@ export default function AppRoutes() {
         <Route path="/utilisateurs" element={<UtilisateursPage />} />
         <Route path="/citernes" element={<CiternesPage />} />
         <Route path="/bons-reception" element={<BonReceptionPage />} />
+        <Route
+  path="/traitement-base"
+  element={<TraitementBasePage />}
+/>
       </Route>
 
       <Route

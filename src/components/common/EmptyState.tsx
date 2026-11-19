@@ -28,12 +28,12 @@ export default function EmptyState({
         </div>
       )}
 
-      <p className="text-[13px] font-semibold text-[#38453D]">
+      <p className="text-[15px] font-semibold text-[#38453D]">
         {title}
       </p>
 
       {description && (
-        <p className="mt-1 max-w-[350px] text-[11px] leading-5 text-[#8A948D]">
+        <p className="mt-1 max-w-[350px] text-[13px] font-semibold leading-5 text-[#8A948D]">
           {description}
         </p>
       )}

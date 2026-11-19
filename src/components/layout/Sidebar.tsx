@@ -10,6 +10,7 @@ import {
   Wallet,
   Droplets,
   ReceiptText,
+  Factory,
   X,
 } from "lucide-react";
 
@@ -64,6 +65,11 @@ const menuItems: MenuItem[] = [
   label: "Bons de réception",
   path: "/bons-reception",
   icon: ReceiptText,
+},
+{
+  label: "Traitement de base",
+  path: "/traitement-base",
+  icon: Factory,
 },
 ];
 

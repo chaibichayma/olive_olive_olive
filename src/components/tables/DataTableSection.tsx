@@ -25,13 +25,13 @@ export default function DataTableSection<T>({
         <div className="mb-2.5 flex flex-wrap items-center justify-between gap-2">
 
           {title && (
-            <h3 className="text-[13px] font-semibold text-[#38453D]">
+            <h3 className="text-[15px] font-semibold text-[#38453D]">
               {title}
             </h3>
           )}
 
           {badgeLabel && (
-            <Badge variant="success">
+            <Badge variant="success" className="text-[13px] font-semibold">
               {badgeLabel}
             </Badge>
           )}

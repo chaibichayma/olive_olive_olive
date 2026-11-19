@@ -59,13 +59,13 @@ export default function FormSection({
       <div className="mb-4">
         <div className="flex items-center gap-2">
 
-          <h3 className="text-base font-semibold tracking-tight text-[#344238]">
+          <h3 className="text-[18px] font-semibold tracking-tight text-[#344238]">
             {section.title}
           </h3>
         </div>
 
         {section.description && (
-          <p className="mt-1 text-sm font-normal leading-5 text-[#7D8981]">
+          <p className="mt-1 text-[15px] font-semibold leading-5 text-[#7D8981]">
             {section.description}
           </p>
         )}

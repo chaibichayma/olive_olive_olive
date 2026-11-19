@@ -51,6 +51,14 @@ export type FilterField =
       toName: string;
       fromPlaceholder?: string;
       toPlaceholder?: string;
+    })
+  | (BaseFilterField & {
+      type: "custom";
+      name: string;
+      render: (
+        value: string,
+        onChange: (value: string) => void
+      ) => ReactNode;
     });
 
 interface FilterPanelProps {
@@ -70,7 +78,7 @@ const inputClassName = `
   h-[39px] w-full min-w-0 rounded-lg
   border border-[#DDE3DF]
   bg-white px-3
-  text-[11px] text-[#46534B]
+  text-[15px] font-semibold text-[#46534B]
   outline-none transition-all duration-200
   placeholder:text-[#A0AAA3]
   hover:border-[#B7C9BD]
@@ -80,7 +88,7 @@ const inputClassName = `
 
 const labelClassName = `
   mb-1.5 block
-  text-[11px] font-semibold
+  text-[15px] font-semibold
   text-[#38453D]
 `;
 
@@ -126,7 +134,6 @@ export default function FilterPanel({
     getInitialValues(fields, initialValues)
   );
 
-  // Modifier une valeur
   const handleChange = (name: string, value: string) => {
     setValues((prev) => ({
       ...prev,
@@ -140,12 +147,9 @@ export default function FilterPanel({
     onApply(values);
   };
 
-  // Réinitialiser
+  // Réinitialiser les filtres
   const handleReset = () => {
-    const resetValues = getInitialValues(
-      fields,
-      initialValues
-    );
+    const resetValues = getInitialValues(fields);
 
     setValues(resetValues);
     onReset?.();
@@ -158,6 +162,14 @@ export default function FilterPanel({
 
   const renderField = (field: FilterField) => {
     const FieldIcon = field.icon;
+
+    // CHAMP PERSONNALISÉ
+    if (field.type === "custom") {
+      return field.render(
+        values[field.name] ?? "",
+        (value) => handleChange(field.name, value)
+      );
+    }
 
     // RECHERCHE
     if (field.type === "search") {
@@ -181,14 +193,14 @@ export default function FilterPanel({
       );
     }
 
-    // LISTE DÉROULANTE
+    // LISTE DÉROULANTE CLASSIQUE
     if (field.type === "select") {
       return (
         <div className="relative">
           {FieldIcon && (
             <FieldIcon
               size={16}
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-[#718078] pointer-events-none"
+              className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#718078]"
             />
           )}
 
@@ -204,15 +216,10 @@ export default function FilterPanel({
               ${values[field.name] ? "" : "text-[#8A948D]"}
             `}
           >
-            <option value="">
-              {field.placeholder}
-            </option>
+            <option value="">{field.placeholder}</option>
 
             {field.options.map((option) => (
-              <option
-                key={option.value}
-                value={option.value}
-              >
+              <option key={option.value} value={option.value}>
                 {option.label}
               </option>
             ))}
@@ -232,7 +239,7 @@ export default function FilterPanel({
         <div className="relative">
           <CalendarDays
             size={15}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-[#718078] pointer-events-none"
+            className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#718078]"
           />
 
           <input
@@ -252,7 +259,6 @@ export default function FilterPanel({
     if (field.type === "dateRange") {
       return (
         <div className="flex h-[39px] min-w-0 items-center gap-2 rounded-lg border border-[#DDE3DF] bg-white px-2 transition-colors focus-within:border-[#6D9B82]">
-
           <CalendarDays
             size={15}
             className="shrink-0 text-[#718078]"
@@ -293,33 +299,25 @@ export default function FilterPanel({
   // ==========================================
 
   return (
-    <div className="overflow-hidden rounded-xl border border-[#E9EDEB] bg-white shadow-sm">
-
+    <div className="overflow-visible rounded-xl border border-[#E9EDEB] bg-white shadow-sm">
       {/* HEADER */}
-
-      <div className="flex min-h-[36px] items-center gap-2 bg-[#EDF5EF] px-4 py-2">
-
+      <div className="flex min-h-[36px] items-center gap-2 rounded-t-xl bg-[#EDF5EF] px-4 py-2">
         {icon && (
           <span className="flex shrink-0 items-center text-[#285640]">
             {icon}
           </span>
         )}
 
-        <h3 className="text-[12px] font-bold text-[#285640]">
+        <h3 className="text-[15px] font-bold text-[#285640]">
           {title}
         </h3>
-
       </div>
 
       {/* FORMULAIRE */}
-
       <form
         onSubmit={handleSubmit}
-        className="flex flex-wrap items-end gap-x-4 gap-y-3 px-4 py-3"
+        className="flex flex-wrap items-end gap-x-4 gap-y-3 rounded-b-xl px-4 py-3"
       >
-
-        {/* CHAMPS */}
-
         {fields.map((field) => (
           <div
             key={
@@ -337,10 +335,8 @@ export default function FilterPanel({
           </div>
         ))}
 
-        {/* ACTIONS RÉUTILISABLES */}
-
+        {/* BOUTONS RÉUTILISABLES */}
         <FilterActions onReset={handleReset} />
-
       </form>
     </div>
   );

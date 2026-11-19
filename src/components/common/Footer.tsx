@@ -24,7 +24,7 @@ export default function Footer({
       <div className="flex min-h-[42px] flex-col items-center justify-between gap-2 px-5 py-2 sm:flex-row sm:px-7">
 
         {/* Copyright */}
-        <p className="text-[10px] font-normal text-[#89948C]">
+        <p className="text-[13px] font-semibold text-[#89948C]">
           © {currentYear} {companyName}
         </p>
 
@@ -36,7 +36,7 @@ export default function Footer({
                 <a
                   href={link.href}
                   className="
-                    text-[10px] font-normal text-[#89948C]
+                    text-[13px] font-semibold text-[#89948C]
                     transition-colors duration-200
                     hover:text-[#556B2F]
                   "

@@ -239,12 +239,6 @@ export default function AjouterModifierPage({
           placeholder: "0.000",
         },
         {
-          name: "priceKg",
-          label: "Prix par kg",
-          type: "number",
-          placeholder: "0.000",
-        },
-        {
           name: "price",
           label: "Prix total",
           type: "number",

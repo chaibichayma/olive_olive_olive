@@ -28,7 +28,7 @@ export default function FilterActions({
         leftIcon={<Filter size={14} />}
         className="
           h-[39px] rounded-lg px-5
-          text-[11px]
+          text-[16px] font-semibold
           shadow-sm
           active:scale-[0.98]
         "
@@ -47,7 +47,7 @@ export default function FilterActions({
         className="
           h-[39px] rounded-lg px-4
           border-[#47785B]
-          text-[11px]
+          text-[16px] font-semibold
           active:scale-[0.98]
         "
       >

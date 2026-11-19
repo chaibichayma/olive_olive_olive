@@ -19,7 +19,7 @@ export const inputClassName = `
   !bg-white
   !px-3
   !py-0
-  !text-[13px]
+  !text-[15px]
   !font-semibold
   !leading-normal
   !text-black
@@ -27,7 +27,7 @@ export const inputClassName = `
   !shadow-none
   transition-all
   duration-200
-  placeholder:!text-[12px]
+  placeholder:!text-[15px]
   placeholder:!font-semibold
   placeholder:!text-[#A0AAA3]
   hover:!border-[#C6D0C9]
@@ -72,7 +72,7 @@ export default function FormFieldRenderer({
         className="
           mb-1.5
           block
-          !text-[13px]
+          !text-[15px]
           !font-semibold
           !leading-normal
           text-[#344238]
@@ -154,7 +154,7 @@ export default function FormFieldRenderer({
     !h-auto
     !min-h-[75px]
     !py-2
-    !text-[12px]
+    !text-[14px]
     !font-semibold
     placeholder:!font-semibold
     resize-y

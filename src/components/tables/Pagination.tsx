@@ -44,7 +44,7 @@ export default function Pagination<T>({
 
         {/* RÉSULTATS */}
 
-        <p className="text-[10px] font-medium text-[#8A948D]">
+        <p className="text-[12px] font-semibold text-[#8A948D]">
           {startItem}–{endItem} sur {data.length} résultats
         </p>
 
