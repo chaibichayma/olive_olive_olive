@@ -49,7 +49,7 @@ export default function StatsCards({
 
               {/* SUBTITLE */}
               {item.subtitle && (
-                <p className="mt-3 text-[13px] font-semibold text-[#89958C]">
+                <p className="mt-3 text-[12px] font-semibold text-[#89958C]">
                   {item.subtitle}
                 </p>
               )}

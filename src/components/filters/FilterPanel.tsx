@@ -66,6 +66,8 @@ interface FilterPanelProps {
   icon?: ReactNode;
   fields: FilterField[];
   initialValues?: FilterValues;
+  showActions?: boolean;
+  applyOnChange?: boolean;
   onApply: (values: FilterValues) => void;
   onReset?: () => void;
 }
@@ -129,17 +131,25 @@ export default function FilterPanel({
   initialValues,
   onApply,
   onReset,
+  showActions = true,
+  applyOnChange = false,
 }: FilterPanelProps) {
   const [values, setValues] = useState<FilterValues>(() =>
     getInitialValues(fields, initialValues)
   );
 
   const handleChange = (name: string, value: string) => {
-    setValues((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+  const updatedValues = {
+    ...values,
+    [name]: value,
   };
+
+  setValues(updatedValues);
+
+  if (applyOnChange) {
+    onApply(updatedValues);
+  }
+};
 
   // Appliquer les filtres
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
@@ -336,7 +346,7 @@ export default function FilterPanel({
         ))}
 
         {/* BOUTONS RÉUTILISABLES */}
-        <FilterActions onReset={handleReset} />
+        {showActions && <FilterActions onReset={handleReset} />}
       </form>
     </div>
   );

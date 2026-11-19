@@ -62,15 +62,15 @@ const menuItems: MenuItem[] = [
     icon: Droplets,
   },
   {
-  label: "Bons de réception",
-  path: "/bons-reception",
-  icon: ReceiptText,
-},
-{
-  label: "Traitement de base",
-  path: "/traitement-base",
-  icon: Factory,
-},
+    label: "Bons de réception",
+    path: "/bons-reception",
+    icon: ReceiptText,
+  },
+  {
+    label: "Traitement de base",
+    path: "/traitement-base",
+    icon: Factory,
+  },
 ];
 
 // ==================================================
@@ -103,9 +103,7 @@ export default function Sidebar({
 
   return (
     <>
-      {/* ==========================================
-          OVERLAY MOBILE
-      ========================================== */}
+      {/* OVERLAY MOBILE */}
 
       <div
         onClick={onClose}
@@ -120,16 +118,15 @@ export default function Sidebar({
         `}
       />
 
-      {/* ==========================================
-          SIDEBAR
-      ========================================== */}
+      {/* SIDEBAR */}
 
       <aside
         className={`
           fixed inset-y-0 left-0 z-50
           flex h-dvh w-[255px] shrink-0 flex-col
           border-r border-gray-200 bg-white
-          transition-transform duration-300 ease-in-out
+          transition-all duration-300 ease-in-out
+          dark:border-[#35463B] dark:bg-[#1C2921]
           lg:static lg:z-auto lg:h-screen lg:translate-x-0
           ${
             isOpen
@@ -138,18 +135,15 @@ export default function Sidebar({
           }
         `}
       >
+        {/* LOGO */}
 
-        {/* ==========================================
-            LOGO
-        ========================================== */}
-
-        <div className="relative flex shrink-0 flex-col items-center border-b border-gray-100 px-3 pb-4 pt-5">
+        <div className="relative flex shrink-0 flex-col items-center border-b border-gray-100 px-3 pb-4 pt-5 dark:border-[#35463B]">
 
           <button
             type="button"
             onClick={onClose}
             aria-label="Fermer le menu"
-            className="absolute right-3 top-3 rounded-md p-1.5 text-gray-500 transition hover:bg-gray-100 lg:hidden"
+            className="absolute right-3 top-3 rounded-md p-1.5 text-gray-500 transition hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-[#2B3B30] lg:hidden"
           >
             <X size={19} />
           </button>
@@ -159,20 +153,12 @@ export default function Sidebar({
             alt="Logo"
             className="h-[90px] w-[150px] object-contain"
           />
-
-          
-
         </div>
 
-        {/* ==========================================
-            NAVIGATION
-        ========================================== */}
+        {/* NAVIGATION */}
 
         <nav className="flex-1 overflow-y-auto px-3 py-4">
-
-
           <div className="space-y-1.5">
-
             {menuItems.map((item) => {
               const Icon = item.icon;
 
@@ -187,12 +173,11 @@ export default function Sidebar({
                     transition-all duration-200
                     ${
                       isActive
-                        ? "border-[#6D9B82] bg-[#E8F1EB] text-[#24563F]"
-                        : "border-transparent text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                        ? "border-[#6D9B82] bg-[#E8F1EB] text-[#24563F] dark:border-[#79A98A] dark:bg-[#2B4434] dark:text-[#B9DEC4]"
+                        : "border-transparent text-gray-600 hover:bg-gray-50 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-[#26372C] dark:hover:text-white"
                     }
                   `}
                 >
-
                   {({ isActive }) => (
                     <>
                       <Icon
@@ -200,8 +185,8 @@ export default function Sidebar({
                         strokeWidth={1.9}
                         className={`shrink-0 ${
                           isActive
-                            ? "text-[#47785B]"
-                            : "text-gray-500"
+                            ? "text-[#47785B] dark:text-[#91C5A1]"
+                            : "text-gray-500 dark:text-gray-400"
                         }`}
                       />
 
@@ -210,14 +195,11 @@ export default function Sidebar({
                       </span>
                     </>
                   )}
-
                 </NavLink>
               );
             })}
-
           </div>
         </nav>
-
       </aside>
     </>
   );

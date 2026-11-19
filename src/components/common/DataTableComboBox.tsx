@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Search } from "lucide-react";
 
 export interface ComboBoxColumn<T> {
   key: string;
@@ -40,15 +40,23 @@ export default function DataTableComboBox<T>({
   disabled = false,
 }: DataTableComboBoxProps<T>) {
   const [isOpen, setIsOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+
+const filteredData = data.filter((item) =>
+  getOptionLabel(item)
+    .toLowerCase()
+    .includes(searchTerm.toLowerCase())
+);
 
   const selectedItem = data.find(
     (item) => getOptionValue(item) === value
   );
 
   const handleSelect = (item: T) => {
-    onChange(getOptionValue(item));
-    setIsOpen(false);
-  };
+  onChange(getOptionValue(item));
+  setSearchTerm("");
+  setIsOpen(false);
+};
 
   return (
     <div
@@ -100,6 +108,23 @@ export default function DataTableComboBox<T>({
           />
 
           <div className="absolute left-0 top-full z-50 mt-1 w-full overflow-hidden rounded-lg border border-[#DCE3DE] bg-white shadow-lg">
+            <div className="border-b border-[#E9EDEB] bg-white p-3">
+  <div className="relative">
+    <Search
+      size={16}
+      className="absolute left-3 top-1/2 -translate-y-1/2 text-[#89958C]"
+    />
+
+    <input
+      type="text"
+      value={searchTerm}
+      onChange={(e) => setSearchTerm(e.target.value)}
+      onClick={(e) => e.stopPropagation()}
+      placeholder="Rechercher par nom ou téléphone..."
+      className="h-10 w-full rounded-lg border border-[#DCE3DE] bg-white pl-9 pr-3 text-[14px] outline-none transition focus:border-[#47785B] focus:ring-2 focus:ring-[#47785B]/10"
+    />
+  </div>
+</div>
             <div
               className="overflow-auto"
               style={{ maxHeight }}
@@ -119,8 +144,8 @@ export default function DataTableComboBox<T>({
                 </thead>
 
                 <tbody>
-                  {data.length > 0 ? (
-                    data.map((item) => {
+                  {filteredData.length > 0 ? (
+  filteredData.map((item) => {
                       const optionValue = getOptionValue(item);
                       const isSelected = optionValue === value;
 

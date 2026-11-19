@@ -28,25 +28,6 @@ export default function Footer({
           © {currentYear} {companyName}
         </p>
 
-        {/* Navigation */}
-        <nav aria-label="Navigation du pied de page">
-          <ul className="flex items-center gap-3 sm:gap-4">
-            {links.map((link) => (
-              <li key={link.label}>
-                <a
-                  href={link.href}
-                  className="
-                    text-[13px] font-semibold text-[#89948C]
-                    transition-colors duration-200
-                    hover:text-[#556B2F]
-                  "
-                >
-                  {link.label}
-                </a>
-              </li>
-            ))}
-          </ul>
-        </nav>
 
       </div>
     </footer>

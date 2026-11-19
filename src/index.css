@@ -1,6 +1,8 @@
 
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 * {
   box-sizing: border-box;
 }
@@ -17,6 +19,13 @@ body {
   font-family: Arial, Helvetica, sans-serif;
   background-color: #F5F7F6;
   color: #1f2937;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/* Dark mode */
+html.dark body {
+  background-color: #151F19;
+  color: #E5EDE7;
 }
 
 button,
@@ -33,6 +42,11 @@ button {
 ::selection {
   background-color: #d1fae5;
   color: #064e3b;
+}
+
+html.dark ::selection {
+  background-color: #285640;
+  color: white;
 }
 
 /* Scrollbar */
@@ -52,4 +66,12 @@ button {
 
 ::-webkit-scrollbar-thumb:hover {
   background: #9ca3af;
+}
+
+html.dark ::-webkit-scrollbar-thumb {
+  background: #526358;
+}
+
+html.dark ::-webkit-scrollbar-thumb:hover {
+  background: #718578;
 }

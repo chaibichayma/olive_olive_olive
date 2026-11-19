@@ -1,8 +1,10 @@
 
+import { useEffect, useState } from "react";
 import {
   PanelLeft,
   Search,
   Sun,
+  Moon,
   History,
   Bell,
   ChevronRight,
@@ -29,7 +31,8 @@ const pageNames: Record<string, string> = {
   "/utilisateurs": "Utilisateurs",
   "/comptes": "Comptes",
   "/citernes": "Citernes",
-  "/bons-reception": "Bons de réception", 
+  "/bons-reception": "Bons de réception",
+  "/traitement-base": "Traitement de base",
 };
 
 // ==================================================
@@ -39,15 +42,47 @@ const pageNames: Record<string, string> = {
 export default function Header({ onMenuClick }: HeaderProps) {
   const location = useLocation();
 
+  const [isDarkMode, setIsDarkMode] = useState(
+    () => document.documentElement.classList.contains("dark")
+  );
+
   const currentPage =
     pageNames[location.pathname] ?? "Dashboard";
 
-  return (
-    <header className="sticky top-0 z-30 flex h-[58px] w-full shrink-0 items-center justify-between gap-3 border-b border-white/10 bg-[#285640] px-3 text-white shadow-sm sm:px-5">
+  // Synchroniser le thème avec UserProfileMenu
+  useEffect(() => {
+    const observer = new MutationObserver(() => {
+      setIsDarkMode(
+        document.documentElement.classList.contains("dark")
+      );
+    });
 
-      {/* ==========================================
-          LEFT SECTION
-      ========================================== */}
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
+  // Changer le thème
+  const handleToggleTheme = () => {
+    const nextMode = !document.documentElement.classList.contains("dark");
+
+    document.documentElement.classList.toggle("dark", nextMode);
+
+    localStorage.setItem(
+      "oliveapp_dark_mode",
+      String(nextMode)
+    );
+
+    setIsDarkMode(nextMode);
+  };
+
+  return (
+    <header className="sticky top-0 z-30 flex h-[58px] w-full shrink-0 items-center justify-between gap-3 border-b border-white/10 bg-[#285640] px-3 text-white shadow-sm transition-colors duration-200 sm:px-5">
+
+      {/* LEFT SECTION */}
 
       <div className="flex min-w-0 items-center gap-3 sm:gap-5">
 
@@ -83,9 +118,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
 
       </div>
 
-      {/* ==========================================
-          RIGHT SECTION
-      ========================================== */}
+      {/* RIGHT SECTION */}
 
       <div className="flex shrink-0 items-center gap-1.5 sm:gap-2.5">
 
@@ -111,10 +144,24 @@ export default function Header({ onMenuClick }: HeaderProps) {
 
         <button
           type="button"
-          aria-label="Changer le thème"
+          onClick={handleToggleTheme}
+          aria-label={
+            isDarkMode
+              ? "Activer le mode clair"
+              : "Activer le mode sombre"
+          }
+          title={
+            isDarkMode
+              ? "Mode clair"
+              : "Mode sombre"
+          }
           className="hidden h-8 w-8 items-center justify-center rounded-md text-white/90 transition hover:bg-white/10 sm:flex"
         >
-          <Sun size={18} strokeWidth={1.8} />
+          {isDarkMode ? (
+            <Moon size={18} strokeWidth={1.8} />
+          ) : (
+            <Sun size={18} strokeWidth={1.8} />
+          )}
         </button>
 
         {/* History */}
@@ -139,19 +186,16 @@ export default function Header({ onMenuClick }: HeaderProps) {
           <span className="absolute right-[5px] top-[4px] h-[7px] w-[7px] rounded-full border border-[#285640] bg-red-400" />
         </button>
 
-        {/* ==========================================
-            USER PROFILE
-        ========================================== */}
-
         {/* USER PROFILE */}
-<UserProfileMenu
-  userName="Foulen ben foulen"
-  email="foulen@gmail.com"
-  initials="FA"
-  onLogout={() => {
-    console.log("Déconnexion");
-  }}
-/>
+
+        <UserProfileMenu
+          userName="Foulen ben foulen"
+          email="foulen@gmail.com"
+          initials="FA"
+          onLogout={() => {
+            console.log("Déconnexion");
+          }}
+        />
 
       </div>
 

@@ -244,13 +244,15 @@ export default function TraitementBasePage() {
 
       {/* FILTER PANEL */}
       <FilterPanel
-        title="Filtres"
-        icon={<FlaskConical size={16} />}
-        fields={filterFields}
-        initialValues={filters}
-        onApply={handleApplyFilters}
-        onReset={handleResetFilters}
-      />
+  title="Filtres"
+  icon={<FlaskConical size={16} />}
+  fields={filterFields}
+  initialValues={filters}
+  onApply={handleApplyFilters}
+  onReset={handleResetFilters}
+  showActions={false}
+  applyOnChange={true}
+/>
 
       {/* RESULTS */}
       {appliedCompteId && (
@@ -339,7 +341,7 @@ export default function TraitementBasePage() {
           <EmptyState
             icon={<FlaskConical size={28} className="text-[#47785B]" />}
             title="Aucun compte sélectionné"
-            description="Sélectionnez un compte puis cliquez sur Filtrer pour afficher ses indicateurs et ses bons de réception."
+            description="Recherchez un compte par son nom ou son téléphone, puis sélectionnez-le pour afficher ses informations, ses indicateurs et ses bons de réception."
           />
         </div>
       )}
