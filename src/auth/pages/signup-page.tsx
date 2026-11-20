@@ -125,18 +125,18 @@ export function SignUpPage() {
   }
 
   return (
-    <main className="flex min-h-screen w-full items-center justify-center bg-[#F4F7F5] px-4 py-8">
+    <main className="flex min-h-screen w-full items-center justify-center bg-[#F4F7F5] px-4 py-8 dark:bg-[#151F19]">
       {/* Conteneur blanc */}
-      <div className="w-full max-w-[520px] rounded-2xl border border-[#E8EDE9] bg-white px-6 py-8 shadow-[0_8px_30px_rgba(40,86,64,0.07)] sm:px-10 sm:py-10">
+      <div className="w-full max-w-[520px] rounded-2xl border border-[#E8EDE9] bg-white px-6 py-8 shadow-[0_8px_30px_rgba(40,86,64,0.07)] sm:px-10 sm:py-10 dark:border-[#35463B] dark:bg-[#1C2921]">
 
         {/* Header */}
         <div className="mb-7 text-center">
 
-          <h1 className="text-2xl font-bold tracking-tight text-[#26352D]">
+          <h1 className="text-2xl font-bold tracking-tight text-[#26352D] dark:text-[#E5EDE7]">
             Créer un compte
           </h1>
 
-          <p className="mt-2 text-sm text-[#7A857E]">
+          <p className="mt-2 text-sm text-[#7A857E] dark:text-[#A8B8AC]">
             Créez votre compte pour commencer.
           </p>
         </div>
@@ -181,7 +181,7 @@ export function SignUpPage() {
                 name="firstName"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-[13px] font-medium text-[#34443A]">
+                    <FormLabel className="text-[13px] font-medium text-[#34443A] dark:text-[#E5EDE7]">
                       Prénom
                     </FormLabel>
 
@@ -204,7 +204,7 @@ export function SignUpPage() {
                 name="lastName"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-[13px] font-medium text-[#34443A]">
+                    <FormLabel className="text-[13px] font-medium text-[#34443A] dark:text-[#E5EDE7]">
                       Nom
                     </FormLabel>
 
@@ -227,7 +227,7 @@ export function SignUpPage() {
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-[13px] font-medium text-[#34443A]">
+                    <FormLabel className="text-[13px] font-medium text-[#34443A] dark:text-[#E5EDE7]">
                       Adresse e-mail
                     </FormLabel>
 
@@ -251,7 +251,7 @@ export function SignUpPage() {
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-[13px] font-medium text-[#34443A]">
+                    <FormLabel className="text-[13px] font-medium text-[#34443A] dark:text-[#E5EDE7]">
                       Mot de passe
                     </FormLabel>
 
@@ -269,7 +269,7 @@ export function SignUpPage() {
                         onClick={() =>
                           setPasswordVisible((previous) => !previous)
                         }
-                        className="absolute right-0 top-0 h-full !min-h-0 !border-0 !bg-transparent !px-3 !text-gray-500 hover:!bg-transparent"
+                        className="absolute right-0 top-0 h-full !min-h-0 !border-0 !bg-transparent !px-3 !text-gray-500 hover:!bg-transparent dark:!text-[#A8B8AC]"
                       >
                         {passwordVisible ? (
                           <EyeOff className="h-4 w-4 text-muted-foreground" />
@@ -290,10 +290,9 @@ export function SignUpPage() {
                 name="confirmPassword"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-[13px] font-medium text-[#34443A]">
+                    <FormLabel className="text-[13px] font-medium text-[#34443A] dark:text-[#E5EDE7]">
                       Confirmer le mot de passe
                     </FormLabel>
-
                     <div className="relative">
                       <Input
                         placeholder="Confirmer votre mot de passe"
@@ -308,7 +307,7 @@ export function SignUpPage() {
                         onClick={() =>
                           setConfirmPasswordVisible((previous) => !previous)
                         }
-                        className="absolute right-0 top-0 h-full !min-h-0 !border-0 !bg-transparent !px-3 !text-gray-500 hover:!bg-transparent"
+                        className="absolute right-0 top-0 h-full !min-h-0 !border-0 !bg-transparent !px-3 !text-gray-500 hover:!bg-transparent dark:!text-[#A8B8AC]"
                       >
                         {confirmPasswordVisible ? (
                           <EyeOff className="h-4 w-4 text-muted-foreground" />
@@ -339,11 +338,11 @@ export function SignUpPage() {
                     </FormControl>
 
                     <div className="space-y-1 leading-5">
-                      <FormLabel className="cursor-pointer text-xs font-normal text-[#59665E]">
+                      <FormLabel className="cursor-pointer text-xs font-normal text-[#59665E] dark:text-[#A8B8AC]">
                         J'accepte les conditions et la{" "}
                         <Link
                           to="#"
-                          className="font-semibold text-[#285640] hover:underline"
+                          className="font-semibold text-[#285640] hover:underline dark:text-[#91C5A1]"
                         >
                           Politique de confidentialité
                         </Link>
@@ -374,11 +373,11 @@ export function SignUpPage() {
               </Button>
 
               {/* Sign In Link */}
-              <div className="pt-2 text-center text-[13px] text-[#7A857E]">
+              <div className="pt-2 text-center text-[13px] text-[#7A857E] dark:text-[#A8B8AC]">
                 Vous avez déjà un compte ?{" "}
                 <Link
                   to="/auth/signin"
-                  className="font-semibold text-[#285640] hover:underline"
+                  className="font-semibold text-[#285640] hover:underline dark:text-[#91C5A1]"
                 >
                   Se connecter
                 </Link>
@@ -388,7 +387,7 @@ export function SignUpPage() {
         </div>
 
         {/* Footer */}
-        <p className="mt-7 text-center text-[11px] text-[#A0AAA3]">
+        <p className="mt-7 text-center text-[11px] text-[#A0AAA3] dark:text-[#718A78]">
           © {new Date().getFullYear()} Olive App. Tous droits réservés.
         </p>
       </div>

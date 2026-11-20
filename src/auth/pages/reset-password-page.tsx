@@ -88,18 +88,18 @@ export function ResetPasswordPage() {
   }
 
   return (
-    <main className="flex min-h-screen w-full items-center justify-center bg-[#F4F7F5] px-4 py-8">
+    <main className="flex min-h-screen w-full items-center justify-center bg-[#F4F7F5] px-4 py-8 dark:bg-[#151F19]">
 
       {/* Conteneur blanc */}
-      <div className="w-full max-w-[520px] rounded-2xl border border-[#E8EDE9] bg-white px-6 py-8 shadow-[0_8px_30px_rgba(40,86,64,0.07)] sm:px-10 sm:py-10">
+      <div className="w-full max-w-[520px] rounded-2xl border border-[#E8EDE9] bg-white px-6 py-8 shadow-[0_8px_30px_rgba(40,86,64,0.07)] sm:px-10 sm:py-10 dark:border-[#35463B] dark:bg-[#1C2921]">
 
         {/* Header */}
         <div className="mb-7 text-center">
-          <h1 className="text-2xl font-bold tracking-tight text-[#26352D]">
+          <h1 className="text-2xl font-bold tracking-tight text-[#26352D] dark:text-[#E5EDE7]">
             Réinitialiser le mot de passe
           </h1>
 
-          <p className="mt-2 text-sm text-[#7A857E]">
+          <p className="mt-2 text-sm text-[#7A857E] dark:text-[#A8B8AC]">
             Saisissez votre adresse e-mail pour retrouver votre compte.
           </p>
         </div>
@@ -127,7 +127,7 @@ export function ResetPasswordPage() {
               {successMessage && (
                 <Alert>
                   <AlertIcon>
-                    <Check className="h-4 w-4 text-green-500" />
+                    <Check className="h-4 w-4 text-green-500 dark:text-[#91C5A1]" />
                   </AlertIcon>
 
                   <AlertTitle>{successMessage}</AlertTitle>
@@ -140,7 +140,7 @@ export function ResetPasswordPage() {
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-[13px] font-medium text-[#34443A]">
+                    <FormLabel className="text-[13px] font-medium text-[#34443A] dark:text-[#E5EDE7]">
                       Adresse e-mail
                     </FormLabel>
 
@@ -171,7 +171,7 @@ export function ResetPasswordPage() {
               <div className="pt-2 text-center">
                 <Link
                   to="/auth/signin"
-                  className="inline-flex items-center gap-2 text-[13px] font-semibold text-[#285640] hover:underline"
+                  className="inline-flex items-center gap-2 text-[13px] font-semibold text-[#285640] hover:underline dark:text-[#91C5A1]"
                 >
                   <MoveLeft className="size-3.5 opacity-70" />
                   Retour à la connexion
@@ -183,7 +183,7 @@ export function ResetPasswordPage() {
         </div>
 
         {/* Footer */}
-        <p className="mt-8 text-center text-[11px] text-[#A0AAA3]">
+        <p className="mt-8 text-center text-[11px] text-[#A0AAA3] dark:text-[#718A78]">
           © {new Date().getFullYear()} Olive App. Tous droits réservés.
         </p>
 

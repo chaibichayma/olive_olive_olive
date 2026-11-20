@@ -36,15 +36,15 @@ export function CallbackPage() {
   }, [navigate, searchParams]);
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center p-4 text-center">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-[#F4F7F5] p-4 text-center dark:bg-[#151F19]">
       <div className="space-y-3">
-        <div className="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-gray-200 border-t-[#285640]" />
+        <div className="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-gray-200 border-t-[#285640] dark:border-[#35463B] dark:border-t-[#91C5A1]" />
 
-        <h2 className="text-xl font-semibold">
+        <h2 className="text-xl font-semibold text-[#26352D] dark:text-[#E5EDE7]">
           Traitement de la connexion...
         </h2>
 
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-muted-foreground dark:text-[#A8B8AC]">
           Vous allez être redirigé dans quelques instants.
         </p>
       </div>
