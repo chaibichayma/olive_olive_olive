@@ -1,3 +1,4 @@
+
 import * as React from 'react';
 import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '../../lib/utils';
@@ -6,11 +7,21 @@ import { cn } from '../../lib/utils';
 const inputVariants = cva(
   `
     flex w-full bg-background border border-input shadow-xs shadow-black/5 transition-[color,box-shadow] text-foreground placeholder:text-muted-foreground/80 
-    focus-visible:ring-ring/30  focus-visible:border-ring focus-visible:outline-none focus-visible:ring-[3px] 
+    focus-visible:ring-ring/30 focus-visible:border-ring focus-visible:outline-none focus-visible:ring-[3px] 
     disabled:cursor-not-allowed disabled:opacity-50 [&[readonly]]:opacity-70 
     file:h-full [&[type=file]]:py-0 file:border-solid file:border-input file:bg-transparent 
     file:font-medium file:not-italic file:text-foreground file:p-0 file:border-0 file:border-e
     aria-invalid:border-destructive/60 aria-invalid:ring-destructive/10 dark:aria-invalid:border-destructive dark:aria-invalid:ring-destructive/20
+
+    dark:bg-[#1C2921]
+    dark:border-[#405247]
+    dark:text-[#E5EDE7]
+    dark:placeholder:text-[#89958C]
+    dark:shadow-[0_1px_3px_rgba(0,0,0,0.15)]
+    dark:focus-visible:border-[#79A98A]
+    dark:focus-visible:ring-[#79A98A]/20
+    dark:file:border-[#405247]
+    dark:file:text-[#E5EDE7]
   `,
   {
     variants: {
@@ -27,7 +38,16 @@ const inputVariants = cva(
 );
 
 const inputAddonVariants = cva(
-  'flex items-center shrink-0 justify-center bg-muted border border-input shadow-xs shadow-[rgba(0,0,0,0.05)] text-secondary-foreground',
+  `
+    flex items-center shrink-0 justify-center
+    bg-muted border border-input
+    shadow-xs shadow-[rgba(0,0,0,0.05)]
+    text-secondary-foreground
+    dark:bg-[#26372C]
+    dark:border-[#405247]
+    dark:text-[#B8C8BC]
+    dark:shadow-[0_1px_3px_rgba(0,0,0,0.15)]
+  `,
   {
     variants: {
       size: {
@@ -69,27 +89,34 @@ const inputGroupVariants = cva(
 const inputWrapperVariants = cva(
   `
     flex items-center gap-1.5
-    has-[:focus-visible]:ring-ring/30 
+    has-[:focus-visible]:ring-ring/30
     has-[:focus-visible]:border-ring
-    has-[:focus-visible]:outline-none 
+    has-[:focus-visible]:outline-none
     has-[:focus-visible]:ring-[3px]
 
-    [&>[data-slot=input]]:flex 
-    [&>[data-slot=input]]:w-full 
-    [&>[data-slot=input]]:outline-none 
-    [&>[data-slot=input]]:transition-colors 
+    [&>[data-slot=input]]:flex
+    [&>[data-slot=input]]:w-full
+    [&>[data-slot=input]]:outline-none
+    [&>[data-slot=input]]:transition-colors
     [&>[data-slot=input]]:text-foreground
-    [&>[data-slot=input]]:placeholder:text-muted-foreground 
-    [&>[data-slot=input]]:border-0 
-    [&>[data-slot=input]]:bg-transparent 
+    [&>[data-slot=input]]:placeholder:text-muted-foreground
+    [&>[data-slot=input]]:border-0
+    [&>[data-slot=input]]:bg-transparent
     [&>[data-slot=input]]:p-0
-    [&>[data-slot=input]]:shadow-none 
-    [&>[data-slot=input]]:focus-visible:ring-0 
-    [&>[data-slot=input]]:h-auto 
+    [&>[data-slot=input]]:shadow-none
+    [&>[data-slot=input]]:focus-visible:ring-0
+    [&>[data-slot=input]]:h-auto
     [&>[data-slot=input]]:disabled:cursor-not-allowed
-    [&>[data-slot=input]]:disabled:opacity-50 
+    [&>[data-slot=input]]:disabled:opacity-50
 
-    [&>svg]:text-muted-foreground 
+    [&>svg]:text-muted-foreground
+
+    dark:has-[:focus-visible]:ring-[#79A98A]/20
+    dark:has-[:focus-visible]:border-[#79A98A]
+
+    dark:[&>[data-slot=input]]:text-[#E5EDE7]
+    dark:[&>[data-slot=input]]:placeholder:text-[#89958C]
+    dark:[&>svg]:text-[#A8B8AC]
   `,
   {
     variants: {
@@ -174,3 +201,4 @@ export {
   inputVariants,
   inputAddonVariants,
 };
+

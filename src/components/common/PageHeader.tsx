@@ -31,21 +31,19 @@ export default function PageHeader({
       `}
     >
       {/* INFORMATIONS DE LA PAGE */}
-
       <div className="min-w-0 flex-1">
-        <h1 className="text-xl font-bold tracking-tight text-[#344238] sm:text-2xl">
+        <h1 className="text-xl font-bold tracking-tight text-[#344238] transition-colors duration-200 dark:text-[#E5EDE7] sm:text-2xl">
           {title}
         </h1>
 
         {description && (
-          <p className="mt-1 text-[15px] font-semibold leading-5 text-[#7D8981]">
+          <p className="mt-1 text-[15px] font-semibold leading-5 text-[#7D8981] transition-colors duration-200 dark:text-[#A8B8AC]">
             {description}
           </p>
         )}
       </div>
 
       {/* ACTIONS DE LA PAGE */}
-
       {(actions || (addLabel && onAdd)) && (
         <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto sm:justify-end">
           {actions}

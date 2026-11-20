@@ -51,6 +51,10 @@ export default function FormSection({
         bg-white
         p-4
         shadow-[0_2px_10px_rgba(40,86,64,0.06)]
+        transition-colors duration-200
+        dark:border-[#35463B]
+        dark:bg-[#1C2921]
+        dark:shadow-[0_2px_10px_rgba(0,0,0,0.12)]
         sm:p-5
       "
     >
@@ -58,14 +62,13 @@ export default function FormSection({
 
       <div className="mb-4">
         <div className="flex items-center gap-2">
-
-          <h3 className="text-[18px] font-semibold tracking-tight text-[#344238]">
+          <h3 className="text-[18px] font-semibold tracking-tight text-[#344238] transition-colors duration-200 dark:text-[#E5EDE7]">
             {section.title}
           </h3>
         </div>
 
         {section.description && (
-          <p className="mt-1 text-[15px] font-semibold leading-5 text-[#7D8981]">
+          <p className="mt-1 text-[15px] font-semibold leading-5 text-[#7D8981] transition-colors duration-200 dark:text-[#A8B8AC]">
             {section.description}
           </p>
         )}

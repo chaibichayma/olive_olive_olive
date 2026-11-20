@@ -9,13 +9,21 @@ export default function DateTimeDisplay({
   showTime = false,
 }: DateTimeDisplayProps) {
   if (!value) {
-    return <span className="text-[#9AA49D]">—</span>;
+    return (
+      <span className="text-[#9AA49D] dark:text-[#829287]">
+        —
+      </span>
+    );
   }
 
   const date = new Date(value);
 
   if (isNaN(date.getTime())) {
-    return <span className="text-[#9AA49D]">—</span>;
+    return (
+      <span className="text-[#9AA49D] dark:text-[#829287]">
+        —
+      </span>
+    );
   }
 
   const formattedDate = new Intl.DateTimeFormat("fr-FR", {
@@ -29,7 +37,7 @@ export default function DateTimeDisplay({
   }).format(date);
 
   return (
-    <span className="whitespace-nowrap">
+    <span className="whitespace-nowrap text-[#38453D] dark:text-[#D4E0D7]">
       {formattedDate}
     </span>
   );

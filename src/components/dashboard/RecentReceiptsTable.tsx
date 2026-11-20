@@ -111,10 +111,10 @@ export default function RecentReceiptsTable() {
           <div className="flex items-center gap-2.5">
             <FileText
               size={21}
-              className="shrink-0 text-[#39834D]"
+              className="shrink-0 text-[#39834D] dark:text-[#91C5A1]"
             />
 
-            <h3 className="text-sm font-semibold text-[#26382C]">
+            <h3 className="text-sm font-semibold text-[#26382C] dark:text-[#E5EDE7]">
               Derniers bons de réception
             </h3>
           </div>
@@ -131,13 +131,13 @@ export default function RecentReceiptsTable() {
 
         {/* Table */}
         <div className="mt-3">
-  <DataTableSection
-    data={recentReceipts}
-    columns={receiptColumns}
-    getRowKey={(row) => row.id}
-    minWidth="950px"
-  />
-</div>
+          <DataTableSection
+            data={recentReceipts}
+            columns={receiptColumns}
+            getRowKey={(row) => row.id}
+            minWidth="950px"
+          />
+        </div>
 
       </div>
     </Card>

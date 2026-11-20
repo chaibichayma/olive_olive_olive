@@ -36,6 +36,15 @@ export const inputClassName = `
   focus:!ring-[#E8F1EB]
   disabled:!cursor-not-allowed
   disabled:!bg-[#F5F7F5]
+
+  dark:!border-[#405247]
+  dark:!bg-[#1C2921]
+  dark:!text-[#E5EDE7]
+  dark:placeholder:!text-[#89958C]
+  dark:hover:!border-[#536B5B]
+  dark:focus:!border-[#79A98A]
+  dark:focus:!ring-[#79A98A]/15
+  dark:disabled:!bg-[#26372C]
 `;
 
 // ==========================================
@@ -58,10 +67,6 @@ export default function FormFieldRenderer({
   onChange,
 }: FormFieldRendererProps) {
 
-  // ==========================================
-  // AFFICHAGE
-  // ==========================================
-
   return (
     <div className="min-w-0">
 
@@ -76,6 +81,8 @@ export default function FormFieldRenderer({
           !font-semibold
           !leading-normal
           text-[#344238]
+          transition-colors duration-200
+          dark:text-[#E5EDE7]
         "
       >
         {field.label}
@@ -103,63 +110,70 @@ export default function FormFieldRenderer({
 
         /* SELECT */
 
-       <select
-  id={field.name}
-  name={field.name}
-  required={field.required}
-  disabled={field.disabled}
-  value={value}
-  onChange={(event) =>
-    onChange(field.name, event.target.value)
-  }
-  dir={field.direction}
-  className={`
-    ${inputClassName}
-    !font-semibold
-    ${value === "" ? "!text-[#A0AAA3]" : "!text-[#46534B]"}
-  `}
->
-  <option value="" className="font-semibold">
-    {field.placeholder ?? "Sélectionner"}
-  </option>
+        <select
+          id={field.name}
+          name={field.name}
+          required={field.required}
+          disabled={field.disabled}
+          value={value}
+          onChange={(event) =>
+            onChange(field.name, event.target.value)
+          }
+          dir={field.direction}
+          className={`
+            ${inputClassName}
+            !font-semibold
+            ${
+              value === ""
+                ? "!text-[#A0AAA3] dark:!text-[#89958C]"
+                : "!text-[#46534B] dark:!text-[#E5EDE7]"
+            }
+          `}
+        >
+          <option
+            value=""
+            className="bg-white font-semibold text-[#A0AAA3] dark:bg-[#1C2921] dark:text-[#89958C]"
+          >
+            {field.placeholder ?? "Sélectionner"}
+          </option>
 
-  {field.options?.map((option) => (
-    <option
-      key={option.value}
-      value={option.value}
-      className="font-semibold text-[#46534B]"
-    >
-      {option.label}
-    </option>
-  ))}
-</select>
+          {field.options?.map((option) => (
+            <option
+              key={option.value}
+              value={option.value}
+              className="bg-white font-semibold text-[#46534B] dark:bg-[#1C2921] dark:text-[#E5EDE7]"
+            >
+              {option.label}
+            </option>
+          ))}
+        </select>
 
       ) : field.type === "textarea" ? (
 
         /* TEXTAREA */
 
         <textarea
-  id={field.name}
-  name={field.name}
-  required={field.required}
-  disabled={field.disabled}
-  placeholder={field.placeholder}
-  value={value}
-  onChange={(event) =>
-    onChange(field.name, event.target.value)
-  }
-  dir={field.direction ?? "auto"}
-  className={`
-    ${inputClassName}
-    !h-auto
-    !min-h-[75px]
-    !py-2
-    !text-[14px]
-    !font-semibold
-    placeholder:!font-semibold
-    resize-y
-  `}
-/>
+          id={field.name}
+          name={field.name}
+          required={field.required}
+          disabled={field.disabled}
+          placeholder={field.placeholder}
+          value={value}
+          onChange={(event) =>
+            onChange(field.name, event.target.value)
+          }
+          dir={field.direction ?? "auto"}
+          className={`
+            ${inputClassName}
+            !h-auto
+            !min-h-[75px]
+            !py-2
+            !text-[14px]
+            !font-semibold
+            placeholder:!font-semibold
+            resize-y
+          `}
+        />
 
       ) : (
 

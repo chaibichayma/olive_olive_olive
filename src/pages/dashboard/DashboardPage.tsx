@@ -44,13 +44,17 @@ const dashboardStats = [
 
 export default function DashboardPage() {
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 text-[#38453D] transition-colors duration-200 dark:text-[#E5EDE7]">
+
+      {/* PAGE HEADER */}
+
       <PageHeader
         title="Tableau de bord"
         description="Vue d'ensemble de votre activité"
       />
 
-      {/* Statistiques */}
+      {/* STATISTIQUES */}
+
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
         {dashboardStats.map((stat) => (
           <DashboardStatCard
@@ -62,27 +66,34 @@ export default function DashboardPage() {
         ))}
       </div>
 
-      {/* Graphiques */}
-      {/* Graphiques */}
-<div className="grid grid-cols-1 items-stretch gap-5 xl:grid-cols-12">
-  <div className="h-full xl:col-span-7">
-    <ReceptionEvolutionChart />
-  </div>
+      {/* GRAPHIQUES */}
 
-  <div className="h-full xl:col-span-5">
-    <ReceiptsBySeasonChart />
-  </div>
-</div>
-{/* Derniers bons et capacité des citernes */}
-<div className="grid grid-cols-1 items-stretch gap-5 xl:grid-cols-12">
-  <div className="min-w-0 xl:col-span-7">
-    <RecentReceiptsTable/>
-  </div>
+      <div className="grid grid-cols-1 items-stretch gap-5 xl:grid-cols-12">
 
-  <div className="min-w-0 xl:col-span-5">
-    <CisternCapacityCard />
-  </div>
-</div>
+        <div className="h-full xl:col-span-7">
+          <ReceptionEvolutionChart />
+        </div>
+
+        <div className="h-full xl:col-span-5">
+          <ReceiptsBySeasonChart />
+        </div>
+
+      </div>
+
+      {/* DERNIERS BONS ET CAPACITÉ DES CITERNES */}
+
+      <div className="grid grid-cols-1 items-stretch gap-5 xl:grid-cols-12">
+
+        <div className="min-w-0 xl:col-span-7">
+          <RecentReceiptsTable />
+        </div>
+
+        <div className="min-w-0 xl:col-span-5">
+          <CisternCapacityCard />
+        </div>
+
+      </div>
+
     </div>
   );
 }

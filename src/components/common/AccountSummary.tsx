@@ -22,16 +22,18 @@ export default function AccountSummary({
       className={`flex flex-wrap items-center justify-between gap-3 ${className}`}
     >
       <div className="min-w-0">
-        <h3 className="text-[18px] font-semibold text-[#38453D]">
+        <h3 className="text-[18px] font-semibold text-[#38453D] dark:text-[#E5EDE7]">
           {title}
         </h3>
 
-        <div className="mt-1 flex flex-wrap items-center gap-2 text-[15px] text-[#89958C]">
+        <div className="mt-1 flex flex-wrap items-center gap-2 text-[15px] text-[#89958C] dark:text-[#A8B8AC]">
           {items.map((item, index) => (
             <span key={`${item.label}-${index}`}>
               {item.value}
               {index < items.length - 1 && (
-                <span className="ml-2">·</span>
+                <span className="ml-2 text-[#89958C] dark:text-[#718A78]">
+                  ·
+                </span>
               )}
             </span>
           ))}
@@ -39,7 +41,7 @@ export default function AccountSummary({
       </div>
 
       {badge && (
-        <span className="shrink-0 rounded-full bg-[#EDF5EF] px-3 py-1 text-[14px] font-semibold text-[#285640]">
+        <span className="shrink-0 rounded-full bg-[#EDF5EF] px-3 py-1 text-[14px] font-semibold text-[#285640] dark:bg-[#2B4434] dark:text-[#B9DEC4]">
           {badge}
         </span>
       )}

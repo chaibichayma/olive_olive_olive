@@ -1,4 +1,5 @@
 
+
 import { useState } from "react";
 import type { ReactNode, FormEvent } from "react";
 
@@ -86,12 +87,20 @@ const inputClassName = `
   hover:border-[#B7C9BD]
   focus:border-[#6D9B82]
   focus:ring-2 focus:ring-[#E8F1EB]
+  dark:border-[#35463B]
+  dark:bg-[#26372C]
+  dark:text-[#E5EDE7]
+  dark:placeholder:text-[#829287]
+  dark:hover:border-[#6FA982]
+  dark:focus:border-[#91C5A1]
+  dark:focus:ring-[#2B4434]
 `;
 
 const labelClassName = `
   mb-1.5 block
   text-[15px] font-semibold
   text-[#38453D]
+  dark:text-[#D4E0D7]
 `;
 
 // ==========================================
@@ -139,17 +148,17 @@ export default function FilterPanel({
   );
 
   const handleChange = (name: string, value: string) => {
-  const updatedValues = {
-    ...values,
-    [name]: value,
+    const updatedValues = {
+      ...values,
+      [name]: value,
+    };
+
+    setValues(updatedValues);
+
+    if (applyOnChange) {
+      onApply(updatedValues);
+    }
   };
-
-  setValues(updatedValues);
-
-  if (applyOnChange) {
-    onApply(updatedValues);
-  }
-};
 
   // Appliquer les filtres
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
@@ -187,7 +196,7 @@ export default function FilterPanel({
         <div className="relative">
           <Search
             size={15}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-[#8A948D]"
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-[#8A948D] dark:text-[#A8B8AC]"
           />
 
           <input
@@ -210,7 +219,7 @@ export default function FilterPanel({
           {FieldIcon && (
             <FieldIcon
               size={16}
-              className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#718078]"
+              className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#718078] dark:text-[#A8B8AC]"
             />
           )}
 
@@ -223,7 +232,7 @@ export default function FilterPanel({
               ${inputClassName}
               appearance-none pr-9
               ${FieldIcon ? "pl-10" : ""}
-              ${values[field.name] ? "" : "text-[#8A948D]"}
+              ${values[field.name] ? "" : "text-[#8A948D] dark:text-[#A8B8AC]"}
             `}
           >
             <option value="">{field.placeholder}</option>
@@ -237,7 +246,7 @@ export default function FilterPanel({
 
           <ChevronDown
             size={15}
-            className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[#46534B]"
+            className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[#46534B] dark:text-[#B8C7BC]"
           />
         </div>
       );
@@ -249,7 +258,7 @@ export default function FilterPanel({
         <div className="relative">
           <CalendarDays
             size={15}
-            className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#718078]"
+            className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#718078] dark:text-[#A8B8AC]"
           />
 
           <input
@@ -268,10 +277,10 @@ export default function FilterPanel({
     // PÉRIODE DE DATES
     if (field.type === "dateRange") {
       return (
-        <div className="flex h-[39px] min-w-0 items-center gap-2 rounded-lg border border-[#DDE3DF] bg-white px-2 transition-colors focus-within:border-[#6D9B82]">
+        <div className="flex h-[39px] min-w-0 items-center gap-2 rounded-lg border border-[#DDE3DF] bg-white px-2 transition-colors focus-within:border-[#6D9B82] dark:border-[#35463B] dark:bg-[#26372C] dark:focus-within:border-[#91C5A1]">
           <CalendarDays
             size={15}
-            className="shrink-0 text-[#718078]"
+            className="shrink-0 text-[#718078] dark:text-[#A8B8AC]"
           />
 
           <input
@@ -281,10 +290,10 @@ export default function FilterPanel({
             onChange={(e) =>
               handleChange(field.fromName, e.target.value)
             }
-            className="w-full min-w-0 bg-transparent text-[10px] text-[#46534B] outline-none"
+            className="w-full min-w-0 bg-transparent text-[10px] text-[#46534B] outline-none dark:text-[#E5EDE7]"
           />
 
-          <span className="shrink-0 text-[10px] text-[#8A948D]">
+          <span className="shrink-0 text-[10px] text-[#8A948D] dark:text-[#A8B8AC]">
             –
           </span>
 
@@ -295,7 +304,7 @@ export default function FilterPanel({
             onChange={(e) =>
               handleChange(field.toName, e.target.value)
             }
-            className="w-full min-w-0 bg-transparent text-[10px] text-[#46534B] outline-none"
+            className="w-full min-w-0 bg-transparent text-[10px] text-[#46534B] outline-none dark:text-[#E5EDE7]"
           />
         </div>
       );
@@ -309,16 +318,16 @@ export default function FilterPanel({
   // ==========================================
 
   return (
-    <div className="overflow-visible rounded-xl border border-[#E9EDEB] bg-white shadow-sm">
+    <div className="overflow-visible rounded-xl border border-[#E9EDEB] bg-white shadow-sm transition-colors duration-200 dark:border-[#35463B] dark:bg-[#1C2921]">
       {/* HEADER */}
-      <div className="flex min-h-[36px] items-center gap-2 rounded-t-xl bg-[#EDF5EF] px-4 py-2">
+      <div className="flex min-h-[36px] items-center gap-2 rounded-t-xl bg-[#EDF5EF] px-4 py-2 dark:bg-[#26372C]">
         {icon && (
-          <span className="flex shrink-0 items-center text-[#285640]">
+          <span className="flex shrink-0 items-center text-[#285640] dark:text-[#91C5A1]">
             {icon}
           </span>
         )}
 
-        <h3 className="text-[15px] font-bold text-[#285640]">
+        <h3 className="text-[15px] font-bold text-[#285640] dark:text-[#B9DEC4]">
           {title}
         </h3>
       </div>

@@ -53,16 +53,16 @@ export default function ReceptionEvolutionChart() {
   } L ${points[0].x} ${top + plotHeight} Z`;
 
   return (
-    <div className="flex h-[300px] flex-col rounded-xl border border-[#E5EBE6] bg-white p-4">
+    <div className="flex h-[300px] flex-col rounded-xl border border-[#E5EBE6] bg-white p-4 transition-colors duration-200 dark:border-[#35463B] dark:bg-[#1C2921]">
       {/* Header */}
       <div className="mb-2 flex shrink-0 items-center justify-between gap-3">
         <div className="flex items-center gap-2.5">
           <ChartNoAxesColumnIncreasing
             size={21}
-            className="shrink-0 text-[#39834D]"
+            className="shrink-0 text-[#39834D] dark:text-[#91C5A1]"
           />
 
-          <h3 className="text-sm font-semibold text-[#26382C]">
+          <h3 className="text-sm font-semibold text-[#26382C] dark:text-[#E5EDE7]">
             Évolution des bons de réception
           </h3>
         </div>
@@ -72,7 +72,7 @@ export default function ReceptionEvolutionChart() {
           onChange={(event) =>
             setPeriod(event.target.value as "year" | "season")
           }
-          className="rounded-lg border border-[#E5EBE6] bg-white px-3 py-2 text-xs text-[#45564A] outline-none focus:border-[#39834D]"
+          className="rounded-lg border border-[#E5EBE6] bg-white px-3 py-2 text-xs text-[#45564A] outline-none transition-colors focus:border-[#39834D] dark:border-[#35463B] dark:bg-[#26372C] dark:text-[#E5EDE7] dark:focus:border-[#91C5A1]"
         >
           <option value="year">Cette année</option>
           <option value="season">Cette saison</option>
@@ -114,6 +114,7 @@ export default function ReceptionEvolutionChart() {
                   x2={width - right}
                   y2={y}
                   stroke="#E9EEEA"
+                  className="dark:stroke-[#35463B]"
                   strokeWidth="1"
                 />
 
@@ -123,6 +124,7 @@ export default function ReceptionEvolutionChart() {
                   textAnchor="end"
                   fontSize="11"
                   fill="#7D8980"
+                  className="dark:fill-[#A8B8AC]"
                 >
                   {value}
                 </text>
@@ -150,7 +152,8 @@ export default function ReceptionEvolutionChart() {
                 cx={point.x}
                 cy={point.y}
                 r="4"
-                fill="white"
+                fill="#FFFFFF"
+                className="dark:fill-[#1C2921]"
                 stroke="#39834D"
                 strokeWidth="2.5"
               />
@@ -161,6 +164,7 @@ export default function ReceptionEvolutionChart() {
                 textAnchor="middle"
                 fontSize="11"
                 fill="#59665D"
+                className="dark:fill-[#B8C7BC]"
               >
                 {point.label}
               </text>

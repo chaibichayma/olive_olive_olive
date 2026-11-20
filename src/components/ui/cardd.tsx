@@ -1,8 +1,9 @@
+
 'use client';
 
 import * as React from 'react';
 import { cva, type VariantProps } from 'class-variance-authority';
-import { cn } from '@/lib/utils';
+import { cn } from '../../lib/utils';
 
 // Define CardContext
 type CardContextType = {
@@ -28,8 +29,16 @@ const cardVariants = cva(
   {
     variants: {
       variant: {
-        default: 'bg-card border border-border shadow-xs black/5',
-        accent: 'bg-muted shadow-xs p-1',
+        default: `
+          bg-card border border-border shadow-xs black/5
+          dark:bg-[#1C2921]
+          dark:border-[#35463B]
+          dark:shadow-[0_2px_8px_rgba(0,0,0,0.15)]
+        `,
+        accent: `
+          bg-muted shadow-xs p-1
+          dark:bg-[#26372C]
+        `,
       },
     },
     defaultVariants: {
@@ -43,7 +52,7 @@ const cardHeaderVariants = cva(
   {
     variants: {
       variant: {
-        default: 'border-b border-border',
+        default: 'border-b border-border dark:border-[#35463B]',
         accent: '',
       },
     },
@@ -57,7 +66,11 @@ const cardContentVariants = cva('grow p-5', {
   variants: {
     variant: {
       default: '',
-      accent: 'bg-card rounded-t-xl [&:last-child]:rounded-b-xl',
+      accent: `
+        bg-card rounded-t-xl
+        [&:last-child]:rounded-b-xl
+        dark:bg-[#1C2921]
+      `,
     },
   },
   defaultVariants: {
@@ -69,7 +82,7 @@ const cardTableVariants = cva('grid grow', {
   variants: {
     variant: {
       default: '',
-      accent: 'bg-card rounded-xl',
+      accent: 'bg-card rounded-xl dark:bg-[#1C2921]',
     },
   },
   defaultVariants: {
@@ -80,8 +93,8 @@ const cardTableVariants = cva('grid grow', {
 const cardFooterVariants = cva('flex items-center px-5 min-h-14', {
   variants: {
     variant: {
-      default: 'border-t border-border',
-      accent: 'bg-card rounded-b-xl mt-[2px]',
+      default: 'border-t border-border dark:border-[#35463B]',
+      accent: 'bg-card rounded-b-xl mt-[2px] dark:bg-[#1C2921]',
     },
   },
   defaultVariants: {
@@ -201,7 +214,7 @@ function CardTitle({
     <h3
       data-slot="card-title"
       className={cn(
-        'text-base font-semibold leading-none tracking-tight',
+        'text-base font-semibold leading-none tracking-tight dark:text-[#E5EDE7]',
         className,
       )}
       {...props}
@@ -216,7 +229,10 @@ function CardDescription({
   return (
     <div
       data-slot="card-description"
-      className={cn('text-sm text-muted-foreground', className)}
+      className={cn(
+        'text-sm text-muted-foreground dark:text-[#A8B8AC]',
+        className,
+      )}
       {...props}
     />
   );

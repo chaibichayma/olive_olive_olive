@@ -1,30 +1,21 @@
 
-import type {
-  FieldValues,
-  DefaultValues,
-  SubmitHandler,
-} from "react-hook-form";
-
-import { ArrowLeft } from "lucide-react";
+import type { FormValues, FormSection } from "../forms/EntityForm";
 
 import PageHeader from "./PageHeader";
-
-import EntityForm, {
-  type EntityField,
-} from "../forms/EntityForm";
+import EntityForm from "../forms/EntityForm";
 import Footer from "./Footer";
 
-interface PageFormLayoutProps<T extends FieldValues> {
+interface PageFormLayoutProps {
   mode: "create" | "edit";
   entityName: string;
   breadcrumb: string;
 
-  fields: EntityField<T>[];
-  initialData?: DefaultValues<T>;
+  sections: FormSection[];
+  initialValues?: FormValues;
 
   loading?: boolean;
 
-  onSubmit: SubmitHandler<T>;
+  onSubmit: (values: FormValues) => void;
   onCancel: () => void;
 
   createDescription?: string;
@@ -32,19 +23,18 @@ interface PageFormLayoutProps<T extends FieldValues> {
   formDescription?: string;
 }
 
-export default function PageFormLayout<T extends FieldValues>({
+export default function PageFormLayout({
   mode,
   entityName,
   breadcrumb,
-  fields,
-  initialData,
-  loading = false,
+  sections,
+  initialValues,
   onSubmit,
   onCancel,
   createDescription,
   editDescription,
   formDescription,
-}: PageFormLayoutProps<T>) {
+}: PageFormLayoutProps) {
   const isEdit = mode === "edit";
 
   const pageTitle = isEdit
@@ -55,43 +45,42 @@ export default function PageFormLayout<T extends FieldValues>({
     ? editDescription ?? `Modifiez les informations de ${entityName}.`
     : createDescription ?? `Renseignez les informations de ${entityName}.`;
 
-  const formTitle = isEdit
-    ? `Informations de ${entityName}`
-    : `Informations de ${entityName}`;
+  const formTitle = `Informations de ${entityName}`;
 
   return (
-    <div className="min-h-full space-y-4 rounded-xl bg-[#F4F6F2] p-3 sm:p-4 lg:p-5">
-
+    <div
+      className="
+        flex min-h-full flex-col space-y-4
+        rounded-xl bg-[#F4F6F2] p-3
+        transition-colors duration-200
+        dark:bg-[#151F19]
+        sm:p-4 lg:p-5
+      "
+    >
       {/* En-tête */}
-
-      <div className="flex flex-col gap-2">
-        <PageHeader
-          title={pageTitle}
-          description={pageDescription}
-          breadcrumb={breadcrumb}
-        />
-
-      </div>
+      <PageHeader
+        title={pageTitle}
+        description={pageDescription}
+        breadcrumb={breadcrumb}
+      />
 
       {/* Formulaire */}
-
-      <EntityForm<T>
-        mode={mode}
-        fields={fields}
-        initialData={initialData}
+      <EntityForm
         title={formTitle}
         description={
           formDescription ??
           "Renseignez les informations ci-dessous. Les champs marqués d'un astérisque sont obligatoires."
         }
-        loading={loading}
+        sections={sections}
+        initialValues={initialValues}
         onSubmit={onSubmit}
         onCancel={onCancel}
       />
-      <div className="mt-auto">
-      <Footer />
-    </div>
 
+      {/* Pied de page */}
+      <div className="mt-auto">
+        <Footer />
+      </div>
     </div>
   );
 }

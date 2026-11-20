@@ -1,3 +1,4 @@
+
 import * as React from 'react';
 import { cva, type VariantProps } from 'class-variance-authority';
 import { X } from 'lucide-react';
@@ -37,6 +38,10 @@ const alertVariants = cva(
       },
     },
     compoundVariants: [
+      // ==================================================
+      // SOLID
+      // ==================================================
+
       {
         variant: 'secondary',
         appearance: 'solid',
@@ -58,17 +63,20 @@ const alertVariants = cva(
       {
         variant: 'success',
         appearance: 'solid',
-        className: 'bg-green-500 text-white *:data-alert-close:text-white',
+        className:
+          'bg-green-500 text-white *:data-alert-close:text-white',
       },
       {
         variant: 'info',
         appearance: 'solid',
-        className: 'bg-violet-600 text-white *:data-alert-close:text-white',
+        className:
+          'bg-violet-600 text-white *:data-alert-close:text-white',
       },
       {
         variant: 'warning',
         appearance: 'solid',
-        className: 'bg-yellow-500 text-white *:data-alert-close:text-white',
+        className:
+          'bg-yellow-500 text-white *:data-alert-close:text-white',
       },
       {
         variant: 'mono',
@@ -76,6 +84,10 @@ const alertVariants = cva(
         className:
           'bg-mono text-mono-foreground *:data-alert-close:text-mono-foreground',
       },
+
+      // ==================================================
+      // OUTLINE
+      // ==================================================
 
       {
         variant: 'secondary',
@@ -120,6 +132,10 @@ const alertVariants = cva(
           'border border-border bg-background text-mono *:data-alert-close:text-foreground',
       },
 
+      // ==================================================
+      // STROKE
+      // ==================================================
+
       {
         variant: 'secondary',
         appearance: 'stroke',
@@ -163,66 +179,80 @@ const alertVariants = cva(
           'border border-border bg-background [&>div:first-of-type>svg]:text-mono',
       },
 
+      // ==================================================
+      // LIGHT
+      // ==================================================
+
       {
         variant: 'secondary',
         appearance: 'light',
-        className: 'bg-muted border border-border text-foreground',
+        className:
+          'bg-muted border border-border text-foreground',
       },
       {
         variant: 'primary',
         appearance: 'light',
         className:
-          'bg-primary/5 border border-primary/10 text-foreground [&>div:first-of-type>svg]:text-primary',
+          'bg-primary/5 border border-primary/10 text-foreground [&>div:first-of-type>svg]:text-primary dark:bg-[#26372C] dark:border-[#405247] dark:[&>div:first-of-type>svg]:text-[#91C5A1]',
       },
       {
         variant: 'destructive',
         appearance: 'light',
         className:
-          'bg-destructive/5 border border-destructive/10 text-foreground [&>div:first-of-type>svg]:text-destructive',
+          'bg-destructive/5 border border-destructive/10 text-foreground [&>div:first-of-type>svg]:text-destructive dark:bg-[#382526] dark:border-[#684143]',
       },
       {
         variant: 'success',
         appearance: 'light',
         className:
-          'bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-950/50 text-foreground [&>div:first-of-type>svg]:text-green-500',
+          'bg-green-50 dark:bg-[#263F30] border border-green-200 dark:border-[#405B47] text-foreground [&>div:first-of-type>svg]:text-green-500 dark:[&>div:first-of-type>svg]:text-[#91C5A1]',
       },
       {
         variant: 'info',
         appearance: 'light',
         className:
-          'bg-violet-50 dark:bg-violet-950/30 border border-violet-200 dark:border-violet-950/50 text-foreground [&>div:first-of-type>svg]:text-violet-600',
+          'bg-violet-50 dark:bg-[#302B40] border border-violet-200 dark:border-[#514565] text-foreground [&>div:first-of-type>svg]:text-violet-600 dark:[&>div:first-of-type>svg]:text-[#B9A6E5]',
       },
       {
         variant: 'warning',
         appearance: 'light',
         className:
-          'bg-yellow-50 dark:bg-yellow-950/30 border border-yellow-200 dark:border-yellow-950/50 text-foreground [&>div:first-of-type>svg]:text-yellow-500',
+          'bg-yellow-50 dark:bg-[#3A3425] border border-yellow-200 dark:border-[#625638] text-foreground [&>div:first-of-type>svg]:text-yellow-500 dark:[&>div:first-of-type>svg]:text-[#E5C77C]',
       },
+
+      // ==================================================
+      // MONO ICON COLORS
+      // ==================================================
 
       {
         variant: 'mono',
         icon: 'primary',
-        className: '[&>div:first-of-type>svg]:text-primary',
+        className:
+          '[&>div:first-of-type>svg]:text-primary dark:[&>div:first-of-type>svg]:text-[#91C5A1]',
       },
       {
         variant: 'mono',
         icon: 'warning',
-        className: '[&>div:first-of-type>svg]:text-yellow-500',
+        className:
+          '[&>div:first-of-type>svg]:text-yellow-500 dark:[&>div:first-of-type>svg]:text-[#E5C77C]',
       },
       {
         variant: 'mono',
         icon: 'success',
-        className: '[&>div:first-of-type>svg]:text-green-500',
+        className:
+          '[&>div:first-of-type>svg]:text-green-500 dark:[&>div:first-of-type>svg]:text-[#91C5A1]',
       },
       {
         variant: 'mono',
         icon: 'destructive',
-        className: '[&>div:first-of-type>svg]:text-destructive',
+        className:
+          '[&>div:first-of-type>svg]:text-destructive',
       },
       {
         variant: 'mono',
         icon: 'info',
-        className: '[&>div:first-of-type>svg]:text-violet-600',
+        className:
+          '[&>div:first-of-type>svg]:text-violet-600 dark:[&>div:first-of-type>svg]:text-[#B9A6E5]',
       },
     ],
     defaultVariants: {
@@ -266,19 +296,20 @@ function Alert({
       {...props}
     >
       {children}
+
       {close && (
         <Button
-  size="sm"
-  variant="ghost"
-  onClick={onClose}
-  aria-label="Dismiss"
-  data-alert-close="true"
-  className={cn(
-    "group !size-4 !min-h-0 !shrink-0 !p-0"
-  )}
->
-  <X className="!size-4 opacity-60 group-hover:opacity-100" />
-</Button>
+          size="sm"
+          variant="ghost"
+          onClick={onClose}
+          aria-label="Dismiss"
+          data-alert-close="true"
+          className={cn(
+            'group !size-4 !min-h-0 !shrink-0 !p-0',
+          )}
+        >
+          <X className="!size-4 opacity-60 group-hover:opacity-100" />
+        </Button>
       )}
     </div>
   );
@@ -297,7 +328,11 @@ function AlertTitle({
   );
 }
 
-function AlertIcon({ children, className, ...props }: AlertIconProps) {
+function AlertIcon({
+  children,
+  className,
+  ...props
+}: AlertIconProps) {
   return (
     <div
       data-slot="alert-icon"
@@ -309,9 +344,17 @@ function AlertIcon({ children, className, ...props }: AlertIconProps) {
   );
 }
 
-function AlertToolbar({ children, className, ...props }: AlertIconProps) {
+function AlertToolbar({
+  children,
+  className,
+  ...props
+}: AlertIconProps) {
   return (
-    <div data-slot="alert-toolbar" className={cn(className)} {...props}>
+    <div
+      data-slot="alert-toolbar"
+      className={cn(className)}
+      {...props}
+    >
       {children}
     </div>
   );
@@ -324,7 +367,10 @@ function AlertDescription({
   return (
     <div
       data-slot="alert-description"
-      className={cn('text-sm [&_p]:leading-relaxed [&_p]:mb-2', className)}
+      className={cn(
+        'text-sm [&_p]:leading-relaxed [&_p]:mb-2',
+        className,
+      )}
       {...props}
     />
   );

@@ -26,18 +26,18 @@ export default function FormHeader({
       <div className="flex flex-col gap-1">
         <div className="flex items-center gap-2">
           {icon && (
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#EDF5EF] text-[#285640]">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#EDF5EF] text-[#285640] transition-colors duration-200 dark:bg-[#26372C] dark:text-[#91C5A1]">
               {icon}
             </div>
           )}
 
-          <h1 className="text-xl font-bold tracking-tight text-[#344238] sm:text-2xl">
+          <h1 className="text-xl font-bold tracking-tight text-[#344238] transition-colors duration-200 dark:text-[#E5EDE7] sm:text-2xl">
             {title}
           </h1>
         </div>
 
         {description && (
-          <p className="mt-1 text-[15px] font-semibold leading-5 text-[#7D8981]">
+          <p className="mt-1 text-[15px] font-semibold leading-5 text-[#7D8981] transition-colors duration-200 dark:text-[#A8B8AC]">
             {description}
           </p>
         )}
@@ -66,6 +66,11 @@ export default function FormHeader({
           duration-200
           hover:!border-[#C8DDCE]
           hover:!bg-[#E2EFE5]
+          dark:!border-[#405B49]
+          dark:!bg-[#26372C]
+          dark:!text-[#B9DEC4]
+          dark:hover:!border-[#536B5B]
+          dark:hover:!bg-[#2B4434]
         "
       >
         Retour à la page

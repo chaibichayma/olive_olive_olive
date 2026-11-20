@@ -14,13 +14,13 @@ export default function FilterActions({
       className="
         flex shrink-0 items-center gap-2
         border-l border-[#E2E8E3] pl-4
+        dark:border-[#35463B]
         max-sm:w-full
         max-sm:border-l-0
         max-sm:pl-0
       "
     >
       {/* BOUTON FILTRER */}
-
       <Button
         type="submit"
         variant="primary"
@@ -37,7 +37,6 @@ export default function FilterActions({
       </Button>
 
       {/* BOUTON RÉINITIALISER */}
-
       <Button
         type="button"
         variant="outline"
@@ -48,6 +47,9 @@ export default function FilterActions({
           h-[39px] rounded-lg px-4
           border-[#47785B]
           text-[16px] font-semibold
+          dark:border-[#6FA982]
+          dark:text-[#B9DEC4]
+          dark:hover:bg-[#26372C]
           active:scale-[0.98]
         "
       >

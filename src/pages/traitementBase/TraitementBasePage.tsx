@@ -1,4 +1,5 @@
 
+
 import { useState } from "react";
 import {
   FlaskConical,
@@ -104,7 +105,7 @@ const bonColumns: TableColumn<BonReception>[] = [
     key: "reference",
     title: "Référence",
     render: (row) => (
-      <span className="font-semibold text-[#285640]">
+      <span className="font-semibold text-[#285640] dark:text-[#91C5A1]">
         {row.reference}
       </span>
     ),
@@ -146,8 +147,8 @@ const bonColumns: TableColumn<BonReception>[] = [
       <span
         className={
           row.resteAPayer > 0
-            ? "font-semibold text-[14px] text-[#C17A36]"
-            : "font-semibold text-[14px] text-[#47785B]"
+            ? "font-semibold text-[14px] text-[#C17A36] dark:text-[#E5B477]"
+            : "font-semibold text-[14px] text-[#47785B] dark:text-[#91C5A1]"
         }
       >
         {formatCurrency(row.resteAPayer)}
@@ -161,10 +162,10 @@ const bonColumns: TableColumn<BonReception>[] = [
       <span
         className={`inline-flex rounded-full px-2.5 py-1 text-[13px] font-semibold ${
           row.statut === "Payé"
-            ? "bg-[#EDF5EF] text-[#285640]"
+            ? "bg-[#EDF5EF] text-[#285640] dark:bg-[#294536] dark:text-[#B9DEC4]"
             : row.statut === "En attente"
-              ? "bg-[#FFF5E8] text-[#B77932]"
-              : "bg-[#EEF2F8] text-[#55749A]"
+              ? "bg-[#FFF5E8] text-[#B77932] dark:bg-[#493923] dark:text-[#E5B477]"
+              : "bg-[#EEF2F8] text-[#55749A] dark:bg-[#2B3B50] dark:text-[#A9C4E3]"
         }`}
       >
         {row.statut}
@@ -244,15 +245,15 @@ export default function TraitementBasePage() {
 
       {/* FILTER PANEL */}
       <FilterPanel
-  title="Filtres"
-  icon={<FlaskConical size={16} />}
-  fields={filterFields}
-  initialValues={filters}
-  onApply={handleApplyFilters}
-  onReset={handleResetFilters}
-  showActions={false}
-  applyOnChange={true}
-/>
+        title="Filtres"
+        icon={<FlaskConical size={16} />}
+        fields={filterFields}
+        initialValues={filters}
+        onApply={handleApplyFilters}
+        onReset={handleResetFilters}
+        showActions={false}
+        applyOnChange={true}
+      />
 
       {/* RESULTS */}
       {appliedCompteId && (
@@ -314,7 +315,7 @@ export default function TraitementBasePage() {
           />
 
           {/* BON RECEPTION TABLE */}
-          <div className="rounded-xl border border-[#E5EBE6] bg-white p-4 sm:p-5">
+          <div className="rounded-xl border border-[#E5EBE6] bg-white p-4 sm:p-5 dark:border-[#35463B] dark:bg-[#1C2921]">
             <DataTableSection<BonReception>
               title="Liste des bons de réception"
               data={bonsDuCompte}
@@ -337,9 +338,9 @@ export default function TraitementBasePage() {
 
       {/* EMPTY STATE */}
       {!appliedCompteId && (
-        <div className="rounded-xl border border-[#E5EBE6] bg-white">
+        <div className="rounded-xl border border-[#E5EBE6] bg-white dark:border-[#35463B] dark:bg-[#1C2921]">
           <EmptyState
-            icon={<FlaskConical size={28} className="text-[#47785B]" />}
+            icon={<FlaskConical size={28} className="text-[#47785B] dark:text-[#91C5A1]" />}
             title="Aucun compte sélectionné"
             description="Recherchez un compte par son nom ou son téléphone, puis sélectionnez-le pour afficher ses informations, ses indicateurs et ses bons de réception."
           />

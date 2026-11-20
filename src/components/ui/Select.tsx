@@ -1,3 +1,4 @@
+
 import {
   forwardRef,
   type SelectHTMLAttributes,
@@ -40,7 +41,11 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
         {label && (
           <label
             htmlFor={selectId}
-            className="mb-1.5 block text-sm font-semibold text-[#344238]"
+            className="
+              mb-1.5 block text-sm font-semibold
+              text-[#344238]
+              dark:text-[#E5EDE7]
+            "
           >
             {label}
             {props.required && (
@@ -61,7 +66,19 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
               focus:ring-[#556B2F]/15
               disabled:cursor-not-allowed disabled:bg-[#F2F4EF]
               disabled:text-[#89948C]
-              ${error ? "border-red-400 focus:border-red-500 focus:ring-red-100" : "border-[#DCE3D8]"}
+
+              dark:bg-[#1C2921]
+              dark:text-[#E5EDE7]
+              dark:border-[#405247]
+              dark:focus:border-[#79A98A]
+              dark:focus:ring-[#79A98A]/20
+              dark:disabled:bg-[#26372C]
+              dark:disabled:text-[#89958C]
+
+              ${error
+                ? "border-red-400 focus:border-red-500 focus:ring-red-100 dark:border-[#A83F3F] dark:focus:border-[#BD4D4D] dark:focus:ring-red-900/30"
+                : "border-[#DCE3D8]"
+              }
               ${className}
             `}
             {...props}
@@ -75,6 +92,7 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
                 key={option.value}
                 value={option.value}
                 disabled={option.disabled}
+                className="dark:bg-[#1C2921] dark:text-[#E5EDE7]"
               >
                 {option.label}
               </option>
@@ -83,18 +101,31 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
 
           <ChevronDown
             size={16}
-            className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[#89948C]"
+            className="
+              pointer-events-none absolute right-3 top-1/2
+              -translate-y-1/2
+              text-[#89948C]
+              dark:text-[#A8B8AC]
+            "
           />
         </div>
 
         {error && (
-          <p className="mt-1 text-xs font-medium text-red-500">
+          <p className="
+            mt-1 text-xs font-medium
+            text-red-500
+            dark:text-[#E5A0A0]
+          ">
             {error}
           </p>
         )}
 
         {!error && hint && (
-          <p className="mt-1 text-xs text-[#89948C]">
+          <p className="
+            mt-1 text-xs
+            text-[#89948C]
+            dark:text-[#A8B8AC]
+          ">
             {hint}
           </p>
         )}

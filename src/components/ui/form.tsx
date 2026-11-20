@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -13,7 +14,6 @@ import {
 } from "react-hook-form";
 import { cn } from '../../lib/utils';
 import { Label } from './label';
-
 
 const Form = FormProvider;
 
@@ -100,7 +100,10 @@ function FormLabel({
   return (
     <Label
       data-slot="form-label"
-      className={cn('font-medium text-foreground', className)}
+      className={cn(
+        'font-medium text-foreground dark:text-[#E5EDE7]',
+        className,
+      )}
       htmlFor={formItemId}
       {...props}
     />
@@ -142,7 +145,10 @@ function FormDescription({
     <div
       data-slot="form-description"
       id={formDescriptionId}
-      className={cn('text-xs text-muted-foreground -mt-0.5', className)}
+      className={cn(
+        'text-xs text-muted-foreground -mt-0.5 dark:text-[#A8B8AC]',
+        className,
+      )}
       {...props}
     />
   );
@@ -164,7 +170,10 @@ function FormMessage({
     <div
       data-slot="form-message"
       id={formMessageId}
-      className={cn('-mt-0.5 text-xs font-normal text-destructive', className)}
+      className={cn(
+        '-mt-0.5 text-xs font-normal text-destructive dark:text-[#E5A0A0]',
+        className,
+      )}
       {...props}
     >
       {body}

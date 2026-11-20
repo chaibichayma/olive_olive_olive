@@ -1,3 +1,4 @@
+
 import type { ReactNode } from "react";
 import { Pencil, X } from "lucide-react";
 
@@ -70,7 +71,7 @@ export default function ViewDetails({
         {sections.map((section, sectionIndex) => (
           <section key={`${section.title ?? "section"}-${sectionIndex}`}>
             {section.title && (
-              <h3 className="mb-3 border-b border-[#E8EDE4] pb-2 text-sm font-bold text-[#556B2F]">
+              <h3 className="mb-3 border-b border-[#E8EDE4] pb-2 text-sm font-bold text-[#556B2F] transition-colors duration-200 dark:border-[#35463B] dark:text-[#91C5A1]">
                 {section.title}
               </h3>
             )}
@@ -82,14 +83,16 @@ export default function ViewDetails({
                   className={`
                     min-w-0 rounded-lg border border-[#E8EDE4]
                     bg-[#FAFBF8] p-3
+                    transition-colors duration-200
+                    dark:border-[#35463B] dark:bg-[#26372C]
                     ${item.fullWidth ? "sm:col-span-2" : ""}
                   `}
                 >
-                  <p className="mb-1 text-xs font-medium text-[#89948C]">
+                  <p className="mb-1 text-xs font-medium text-[#89948C] dark:text-[#A8B8AC]">
                     {item.label}
                   </p>
 
-                  <div className="break-words text-sm font-semibold text-[#344238]">
+                  <div className="break-words text-sm font-semibold text-[#344238] dark:text-[#E5EDE7]">
                     {item.value ?? "—"}
                   </div>
                 </div>

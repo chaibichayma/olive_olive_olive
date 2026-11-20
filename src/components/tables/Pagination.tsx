@@ -40,11 +40,20 @@ export default function Pagination<T>({
     <div>
       {children(paginatedData)}
 
-      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[#E9EDEB] px-1 py-3">
+      <div className="
+        flex flex-wrap items-center justify-between gap-3
+        border-t border-[#E9EDEB]
+        px-1 py-3
+        dark:border-[#35463B]
+      ">
 
         {/* RÉSULTATS */}
 
-        <p className="text-[12px] font-semibold text-[#8A948D]">
+        <p className="
+          text-[12px] font-semibold
+          text-[#8A948D]
+          dark:text-[#A8B8AC]
+        ">
           {startItem}–{endItem} sur {data.length} résultats
         </p>
 
@@ -67,6 +76,9 @@ export default function Pagination<T>({
               transition-colors
               hover:text-[#285640]
               disabled:cursor-not-allowed
+              disabled:opacity-40
+              dark:text-[#A8B8AC]
+              dark:hover:text-[#B9DEC4]
             "
           >
             <ChevronLeft size={13} />
@@ -81,6 +93,8 @@ export default function Pagination<T>({
             px-2 py-1
             text-[11px] font-bold
             text-[#47785B]
+            dark:bg-[#2B4434]
+            dark:text-[#B9DEC4]
           ">
             {currentPage}/{totalPages}
           </span>
@@ -100,6 +114,9 @@ export default function Pagination<T>({
               transition-colors
               hover:text-[#47785B]
               disabled:cursor-not-allowed
+              disabled:opacity-40
+              dark:text-[#B9DEC4]
+              dark:hover:text-[#E5EDE7]
             "
           >
             Suivant

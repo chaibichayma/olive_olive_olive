@@ -42,12 +42,12 @@ export default function ReceiptsBySeasonChart({
   });
 
   return (
-    <div className="flex h-[300px] flex-col rounded-xl border border-[#E5EBE6] bg-white p-4">
+    <div className="flex h-[300px] flex-col rounded-xl border border-[#E5EBE6] bg-white p-4 transition-colors duration-200 dark:border-[#35463B] dark:bg-[#1C2921]">
       {/* Header */}
       <div className="flex items-center gap-2.5">
-        <PieChart size={21} className="shrink-0 text-[#39834D]" />
+        <PieChart size={21} className="shrink-0 text-[#39834D] dark:text-[#91C5A1]" />
 
-        <h3 className="text-base font-semibold text-[#26382C]">
+        <h3 className="text-base font-semibold text-[#26382C] dark:text-[#E5EDE7]">
           Bons de réception par saison
         </h3>
       </div>
@@ -68,6 +68,7 @@ export default function ReceiptsBySeasonChart({
               r={radius}
               fill="none"
               stroke="#F0F4F0"
+              className="dark:stroke-[#35463B]"
               strokeWidth="28"
             />
 
@@ -88,10 +89,10 @@ export default function ReceiptsBySeasonChart({
 
           {/* Center value */}
           <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span className="text-3xl font-bold tracking-tight text-[#26382C]">
+            <span className="text-3xl font-bold tracking-tight text-[#26382C] dark:text-[#F1F5F2]">
               {total}
             </span>
-            <span className="text-sm text-[#89958C]">
+            <span className="text-sm text-[#89958C] dark:text-[#A8B8AC]">
               Bons
             </span>
           </div>
@@ -110,12 +111,12 @@ export default function ReceiptsBySeasonChart({
                   style={{ backgroundColor: season.color }}
                 />
 
-                <span className="whitespace-nowrap text-sm font-medium text-[#59665D]">
+                <span className="whitespace-nowrap text-sm font-medium text-[#59665D] dark:text-[#B8C7BC]">
                   {season.label}
                 </span>
               </div>
 
-              <span className="shrink-0 text-sm font-semibold text-[#26382C]">
+              <span className="shrink-0 text-sm font-semibold text-[#26382C] dark:text-[#E5EDE7]">
                 {season.percentage} %
               </span>
             </div>

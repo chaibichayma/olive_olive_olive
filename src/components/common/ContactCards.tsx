@@ -55,7 +55,16 @@ export default function ContactCards<T>({
         return (
           <div
             key={getKey(item)}
-            className="min-w-0 rounded-xl border border-[#E3EAE5] bg-white p-3.5 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-[#C7D9CC] hover:shadow-md"
+            className="
+              min-w-0 rounded-xl border border-[#E3EAE5]
+              bg-white p-3.5 shadow-sm
+              transition duration-200
+              hover:-translate-y-0.5 hover:border-[#C7D9CC]
+              hover:shadow-md
+              dark:border-[#35463B] dark:bg-[#1C2921]
+              dark:hover:border-[#6FA982]
+              dark:hover:bg-[#223128]
+            "
           >
             {/* IMAGE + NOM + ACTIONS */}
 
@@ -64,16 +73,16 @@ export default function ContactCards<T>({
                 <img
                   src={getImage(item)}
                   alt={getName(item)}
-                  className="h-10 w-10 shrink-0 rounded-full border border-[#E5EBE7] object-cover"
+                  className="h-10 w-10 shrink-0 rounded-full border border-[#E5EBE7] object-cover dark:border-[#35463B]"
                 />
 
                 <div className="min-w-0">
-                  <h3 className="truncate text-[12px] font-semibold text-[#38453D]">
+                  <h3 className="truncate text-[12px] font-semibold text-[#38453D] dark:text-[#E5EDE7]">
                     {getName(item)}
                   </h3>
 
                   {subtitle && (
-                    <p className="mt-0.5 truncate text-[10px] text-[#929D95]">
+                    <p className="mt-0.5 truncate text-[10px] text-[#929D95] dark:text-[#A8B8AC]">
                       {subtitle(item)}
                     </p>
                   )}
@@ -94,16 +103,17 @@ export default function ContactCards<T>({
 
             {/* INFORMATIONS PERSONNALISABLES */}
 
-            <div className="mt-3 space-y-2 border-t border-[#EEF1EF] pt-3">
+            <div className="mt-3 space-y-2 border-t border-[#EEF1EF] pt-3 dark:border-[#35463B]">
               {details.map((detail, index) => (
                 <div
                   key={index}
                   className="flex min-w-0 items-center gap-2"
                 >
-                  <span className="shrink-0 text-[#789080]">
+                  <span className="shrink-0 text-[#789080] dark:text-[#91B99D]">
                     {detail.icon}
                   </span>
-                  <p className="truncate text-[10px] text-[#647168]">
+
+                  <p className="truncate text-[10px] text-[#647168] dark:text-[#B8C7BC]">
                     {detail.value}
                   </p>
                 </div>

@@ -1,7 +1,6 @@
 
 import { History } from "lucide-react";
 
-
 import type { TableColumn } from "../../components/tables";
 import DataTableSection from "../tables/DataTableSection";
 
@@ -71,10 +70,10 @@ const historyData: HistoryItem[] = [
 
 const getStatusBadge = (status: HistoryItem["statut"]) => {
   const styles = {
-    "Validé": "bg-[#DDF5ED] text-[#15966C]",
-    "En Attente": "bg-[#F0E5FF] text-[#9854D8]",
-    "Fin Prod": "bg-[#E3F5DF] text-[#4A9A48]",
-    "Non Payé": "bg-[#FFE5E8] text-[#E05260]",
+    "Validé": "bg-[#DDF5ED] text-[#15966C] dark:bg-[#174A38] dark:text-[#72D5AD]",
+    "En Attente": "bg-[#F0E5FF] text-[#9854D8] dark:bg-[#402B56] dark:text-[#C9A2F0]",
+    "Fin Prod": "bg-[#E3F5DF] text-[#4A9A48] dark:bg-[#294A30] dark:text-[#A3D69A]",
+    "Non Payé": "bg-[#FFE5E8] text-[#E05260] dark:bg-[#542B32] dark:text-[#F29AA3]",
   };
 
   return (
@@ -128,16 +127,16 @@ const columns: TableColumn<HistoryItem>[] = [
 
 export default function CompteHistory() {
   return (
-    <div className="rounded-xl border border-[#E5EBE6] bg-white p-4">
+    <div className="rounded-xl border border-[#E5EBE6] bg-white p-4 transition-colors duration-200 dark:border-[#35463B] dark:bg-[#1C2921]">
 
       {/* HEADER */}
       <div className="mb-3 flex items-center gap-2">
         <History
           size={16}
-          className="text-[#47785B]"
+          className="text-[#47785B] dark:text-[#91C5A1]"
         />
 
-        <h3 className="text-sm font-semibold text-[#38453D]">
+        <h3 className="text-sm font-semibold text-[#38453D] dark:text-[#E5EDE7]">
           Historique du compte
         </h3>
       </div>

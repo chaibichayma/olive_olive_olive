@@ -63,7 +63,11 @@ export default function DataTable<T>({
         {[1, 2, 3].map((item) => (
           <div
             key={item}
-            className="h-8 w-full animate-pulse rounded-md bg-[#F1F4F2]"
+            className="
+              h-8 w-full animate-pulse rounded-md
+              bg-[#F1F4F2]
+              dark:bg-[#26372C]
+            "
           />
         ))}
       </div>
@@ -87,17 +91,25 @@ export default function DataTable<T>({
       style={{ maxWidth }}
     >
       {/* CONTENEUR RESPONSIVE */}
-      <div className="w-full overflow-x-auto overscroll-x-contain rounded-lg">
-
+      <div className="
+        w-full overflow-x-auto overscroll-x-contain
+        rounded-lg
+      ">
         <table
-          className="w-full border-collapse text-left"
+          className="
+            w-full border-collapse text-left
+            dark:bg-[#1C2921]
+          "
           style={{ minWidth }}
         >
-
           {/* EN-TÊTE */}
           <thead>
-            <tr className="border-y border-[#E9EDEB] bg-[#F7F8F9]">
-
+            <tr className="
+              border-y border-[#E9EDEB]
+              bg-[#F7F8F9]
+              dark:border-[#35463B]
+              dark:bg-[#26372C]
+            ">
               {columns.map((column) => (
                 <th
                   key={column.key}
@@ -110,6 +122,7 @@ export default function DataTable<T>({
                     uppercase
                     tracking-[0.02em]
                     text-[#77837B]
+                    dark:text-[#A8B8AC]
 
                     sm:px-3 sm:py-2
                     sm:text-[12px]
@@ -121,13 +134,14 @@ export default function DataTable<T>({
                   {column.title}
                 </th>
               ))}
-
             </tr>
           </thead>
 
           {/* LIGNES */}
-          <tbody className="divide-y divide-[#E9EDEB]">
-
+          <tbody className="
+            divide-y divide-[#E9EDEB]
+            dark:divide-[#35463B]
+          ">
             {data.map((row, index) => (
               <tr
                 key={getRowKey(row, index)}
@@ -137,10 +151,11 @@ export default function DataTable<T>({
                   transition-colors
                   duration-150
                   hover:bg-[#FAFCFA]
+                  dark:bg-[#1C2921]
+                  dark:hover:bg-[#26372C]
                   ${onRowClick ? "cursor-pointer" : ""}
                 `}
               >
-
                 {columns.map((column) => (
                   <td
                     key={column.key}
@@ -150,6 +165,7 @@ export default function DataTable<T>({
                       font-semibold
                       leading-normal
                       text-[#737F77]
+                      dark:text-[#C1CEC4]
 
                       sm:px-3 sm:py-2
                       sm:text-[13px]
@@ -167,18 +183,23 @@ export default function DataTable<T>({
                     </div>
                   </td>
                 ))}
-
               </tr>
             ))}
-
           </tbody>
         </table>
       </div>
 
       {/* NOMBRE DE RÉSULTATS */}
       {showCount && (
-        <div className="border-t border-[#E9EDEB] px-3 py-2">
-          <p className="text-[9px] text-[#929B96]">
+        <div className="
+          border-t border-[#E9EDEB]
+          px-3 py-2
+          dark:border-[#35463B]
+        ">
+          <p className="
+            text-[9px] text-[#929B96]
+            dark:text-[#A8B8AC]
+          ">
             {data.length} élément{data.length > 1 ? "s" : ""}
           </p>
         </div>

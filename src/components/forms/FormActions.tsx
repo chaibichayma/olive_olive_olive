@@ -1,7 +1,6 @@
 
-
 import { useRef, useState } from "react";
-import { Save, X, AlertTriangle } from "lucide-react";
+import { Save, AlertTriangle } from "lucide-react";
 
 import { Button, Modal } from "../ui";
 
@@ -44,14 +43,14 @@ export default function FormActions({
     <>
       <div className="flex flex-wrap justify-end gap-2">
         <Button
-  type="button"
-  variant="outline"
-  size="md"
-  onClick={onCancel}
-  className="!font-semibold !min-w-[150px]"
->
-  {cancelLabel}
-</Button>
+          type="button"
+          variant="outline"
+          size="md"
+          onClick={onCancel}
+          className="!min-w-[150px] !font-semibold"
+        >
+          {cancelLabel}
+        </Button>
 
         <Button
           type="button"
@@ -83,19 +82,19 @@ export default function FormActions({
         size="sm"
       >
         <div className="flex items-start gap-3">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#EDF5EF]">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#EDF5EF] transition-colors duration-200 dark:bg-[#263F30]">
             <AlertTriangle
               size={20}
-              className="text-[#47785B]"
+              className="text-[#47785B] dark:text-[#91C5A1]"
             />
           </div>
 
           <div>
-            <p className="text-sm font-semibold text-[#344238]">
+            <p className="text-sm font-semibold text-[#344238] dark:text-[#E5EDE7]">
               Voulez-vous confirmer l'enregistrement ?
             </p>
 
-            <p className="mt-1 text-xs text-[#89948C]">
+            <p className="mt-1 text-xs text-[#89948C] dark:text-[#A8B8AC]">
               Vérifiez les informations avant de valider le formulaire.
             </p>
           </div>

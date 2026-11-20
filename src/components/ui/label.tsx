@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -6,7 +7,12 @@ import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '../../lib/utils';
 
 const labelVariants = cva(
-  'text-sm leading-none text-foreground peer-disabled:cursor-not-allowed peer-disabled:opacity-50',
+  `
+    text-sm leading-none text-foreground
+    peer-disabled:cursor-not-allowed
+    peer-disabled:opacity-50
+    dark:text-[#E5EDE7]
+  `,
   {
     variants: {
       variant: {
@@ -36,3 +42,4 @@ function Label({
 }
 
 export { Label };
+

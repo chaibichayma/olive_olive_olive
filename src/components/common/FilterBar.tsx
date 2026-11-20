@@ -1,3 +1,4 @@
+
 import type { ReactNode } from "react";
 import { Search, RotateCcw, Download } from "lucide-react";
 import { Button, Input, Select } from "../ui";
@@ -46,6 +47,8 @@ export default function FilterBar({
         mb-4 flex flex-col gap-3 rounded-xl
         border border-[#E1E7DA] bg-white p-4
         shadow-sm
+        transition-colors duration-200
+        dark:border-[#35463B] dark:bg-[#1C2921]
         ${className}
       `}
     >

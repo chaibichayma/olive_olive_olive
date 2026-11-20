@@ -1,58 +1,50 @@
+import { FormPageLayout, type FormSection, type FormValues } from "../forms";
 
-import type {
-  FieldValues,
-  DefaultValues,
-  SubmitHandler,
-} from "react-hook-form";
 
-import PageFormLayout from "./PageFormLayout";
-
-import type { EntityField } from "../forms/EntityForm";
-
-interface EntityFormPageProps<T extends FieldValues> {
+interface EntityFormPageProps {
   mode: "create" | "edit";
   entityName: string;
   breadcrumb: string;
-
-  fields: EntityField<T>[];
-
-  initialData?: DefaultValues<T>;
+  sections: FormSection[];
+  initialValues?: FormValues;
   loading?: boolean;
-
-  onSubmit: SubmitHandler<T>;
+  onSubmit: (values: FormValues) => void;
   onCancel: () => void;
-
   createDescription?: string;
   editDescription?: string;
   formDescription?: string;
 }
 
-export default function EntityFormPage<T extends FieldValues>({
+export default function EntityFormPage({
   mode,
   entityName,
   breadcrumb,
-  fields,
-  initialData,
+  sections,
+  initialValues,
   loading = false,
   onSubmit,
   onCancel,
   createDescription,
   editDescription,
   formDescription,
-}: EntityFormPageProps<T>) {
+}: EntityFormPageProps) {
+  const title =
+    mode === "create"
+      ? `Ajouter ${entityName}`
+      : `Modifier ${entityName}`;
+
+  const description =
+    formDescription ??
+    (mode === "create" ? createDescription : editDescription);
+
   return (
-    <PageFormLayout<T>
-      mode={mode}
-      entityName={entityName}
-      breadcrumb={breadcrumb}
-      fields={fields}
-      initialData={initialData}
-      loading={loading}
+    <FormPageLayout
+      title={title}
+      description={description}
+      sections={sections}
+      initialValues={initialValues}
       onSubmit={onSubmit}
       onCancel={onCancel}
-      createDescription={createDescription}
-      editDescription={editDescription}
-      formDescription={formDescription}
     />
   );
 }
