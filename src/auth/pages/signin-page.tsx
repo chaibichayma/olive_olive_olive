@@ -11,7 +11,7 @@ import {
   type SigninSchemaType,
 } from "../forms/signin-schema";
 
-import { Button } from "../../components/ui";
+import { Button, Input } from "../../components/ui";
 import {
   Alert,
   AlertIcon,
@@ -26,7 +26,6 @@ import {
   FormLabel,
   FormMessage,
 } from "../../components/ui/form";
-import { Input } from "../../components/ui/inputt";
 import { Spinner } from "../../components/ui/spinners";
 
 // Identifiants de connexion

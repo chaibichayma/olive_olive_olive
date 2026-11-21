@@ -15,7 +15,7 @@ import {
   AlertIcon,
   AlertTitle,
 } from "../../components/ui/alert";
-import { Button } from "../../components/ui";
+import { Button, Input } from "../../components/ui";
 import {
   Form,
   FormField,
@@ -23,7 +23,6 @@ import {
   FormLabel,
   FormMessage,
 } from "../../components/ui/form";
-import { Input } from "../../components/ui/inputt";
 import { Spinner } from "../../components/ui/spinners";
 
 interface LocalUser {

@@ -9,6 +9,8 @@ import React, {
   useMemo,
   useState,
 } from 'react';
+import type { Settings } from '../../config/types';
+import { APP_SETTINGS } from '../../config/settings.config';
 
 type Path = string;
 

@@ -10,7 +10,7 @@ import {
   type SignupSchemaType,
 } from "../forms/signup-schema";
 
-import { Button } from "../../components/ui";
+import { Button, Input } from "../../components/ui";
 import {
   Alert,
   AlertIcon,
@@ -26,7 +26,6 @@ import {
   FormMessage,
 } from "../../components/ui/form";
 import { Spinner } from "../../components/ui/spinners";
-import { Input } from "../../components/ui/inputt";
 
 interface LocalUser {
   email: string;

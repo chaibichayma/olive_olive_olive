@@ -1,10 +1,12 @@
-import { Fragment, ReactNode } from 'react';
+
 import { ChevronRight } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
-import { MENU_SIDEBAR } from '@/config/menu.config';
-import { MenuItem } from '@/config/types';
-import { cn } from '@/lib/utils';
-import { useMenu } from '@/hooks/use-menu';
+import { cn } from '../../lib/utils';
+import { Fragment } from 'react/jsx-runtime';
+import type { ReactNode } from 'react';
+import { MENU_SIDEBAR } from '../../config/menu.config';
+import type { MenuItem } from '../../config/types';
+import { useMenu } from '../../hooks/use-menu';
 
 export interface ToolbarHeadingProps {
   title?: string | ReactNode;

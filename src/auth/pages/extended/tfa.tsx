@@ -1,15 +1,18 @@
+
 import { useState } from 'react';
+import type { ChangeEvent } from 'react';
 import { MoveLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { toAbsoluteUrl } from '@/lib/helpers';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+
+import { toAbsoluteUrl } from '../../../lib/helpers';
+import { Button, Input } from '../../../components/ui';
 
 const TwoFactorAuth = () => {
   const [codeInputs, setCodeInputs] = useState(Array(6).fill(''));
 
   const handleInputChange = (index: number, value: string) => {
     if (value.length > 1) return;
+
     const updatedInputs = [...codeInputs];
     updatedInputs[index] = value;
     setCodeInputs(updatedInputs);
@@ -22,6 +25,7 @@ const TwoFactorAuth = () => {
         className="dark:hidden h-20 mb-2"
         alt=""
       />
+
       <img
         src={toAbsoluteUrl('/media/illustrations/34-dark.svg')}
         className="light:hidden h-20 mb-2"
@@ -32,10 +36,12 @@ const TwoFactorAuth = () => {
         <h3 className="text-lg font-medium text-mono mb-5">
           Verify your phone
         </h3>
+
         <div className="flex flex-col">
           <span className="text-sm text-secondary-foreground mb-1.5">
             Enter the verification code we sent to
           </span>
+
           <a href="#" className="text-sm font-medium text-mono">
             ****** 7859
           </a>
@@ -50,7 +56,9 @@ const TwoFactorAuth = () => {
             maxLength={1}
             className="size-10 shrink-0 px-0 text-center"
             value={value}
-            onChange={(e) => handleInputChange(index, e.target.value)}
+            onChange={(e: ChangeEvent<HTMLInputElement>) =>
+              handleInputChange(index, e.target.value)
+            }
           />
         ))}
       </div>
@@ -59,6 +67,7 @@ const TwoFactorAuth = () => {
         <span className="text-sm text-secondary-foreground me-1.5">
           Didn’t receive a code? (37s)
         </span>
+
         <Link
           to="/auth/classic/login"
           className="font-semibold text-foreground hover:text-primary"
@@ -67,7 +76,9 @@ const TwoFactorAuth = () => {
         </Link>
       </div>
 
-      <Button className="grow">Continue</Button>
+      <Button className="grow">
+        Continue
+      </Button>
 
       <Link
         to="/auth/signin"
@@ -81,3 +92,4 @@ const TwoFactorAuth = () => {
 };
 
 export { TwoFactorAuth };
+
