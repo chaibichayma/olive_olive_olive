@@ -1,6 +1,5 @@
 
-
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Wallet } from "lucide-react";
 
 import { FormPageLayout } from "../../components/forms";
@@ -10,14 +9,23 @@ import type {
 } from "../../components/forms";
 
 import type { Compte } from "./types/compte.types";
-import { comptesData } from "./data/compte.data";
-
 
 import DataTableSection from "../../components/tables/DataTableSection";
 import EmptyState from "../../components/common/EmptyState";
 import type { TableColumn } from "../../components/tables";
 import type { BonReception } from "../traitementBase/types/traitement.types";
-import { bonsReceptionData } from "../traitementBase/data/traitement.data";
+
+import {
+  saveCompte,
+  updateCompte,
+} from "../../services/compteService";
+
+import {
+  getCompteByPhone,
+  getListBean,
+} from "../../services/bonReceptionService";
+
+import type { CompteRequest } from "../../models/compte.model";
 
 // ==========================================
 // PROPRIÉTÉS
@@ -25,7 +33,7 @@ import { bonsReceptionData } from "../traitementBase/data/traitement.data";
 
 interface AjouterModifierPageProps {
   compte?: Compte | null;
-  onSave: (values: FormValues) => void;
+  onSave: (values: FormValues) => void | Promise<void>;
   onCancel: () => void;
 }
 
@@ -36,13 +44,90 @@ interface AjouterModifierPageProps {
 const formatNumber = (value: number) =>
   new Intl.NumberFormat("fr-FR", {
     maximumFractionDigits: 2,
-  }).format(value);
+  }).format(value ?? 0);
 
 const formatCurrency = (value: number) =>
   `${formatNumber(value)} DT`;
 
 const formatDate = (date: string) =>
-  new Date(`${date}T00:00:00`).toLocaleDateString("fr-FR");
+  date
+    ? new Date(`${date}T00:00:00`).toLocaleDateString("fr-FR")
+    : "—";
+
+const normalizePhone = (phone?: string) =>
+  (phone ?? "").replace(/\s/g, "").trim();
+
+// ==========================================
+// EXTRACTION DU COMPTE BACKEND
+// ==========================================
+
+const extractCompte = (response: unknown): Compte | null => {
+  if (!response || typeof response !== "object") return null;
+
+  let data: unknown = response;
+
+  if (Array.isArray(data)) {
+    data = data[0];
+  }
+
+  if (!data || typeof data !== "object") return null;
+
+  const wrapper = data as Record<string, unknown>;
+
+  data = wrapper.compte ?? wrapper.data ?? data;
+
+  if (Array.isArray(data)) {
+    data = data[0];
+  }
+
+  if (!data || typeof data !== "object") return null;
+
+  const item = data as Record<string, unknown>;
+  const id = Number(item.id ?? item.compteId);
+
+  if (!Number.isFinite(id) || id <= 0) return null;
+
+  return {
+    ...item,
+    id,
+    name: String(item.name ?? ""),
+    mobile: String(item.mobile ?? ""),
+    mail: String(item.mail ?? ""),
+    adresse: String(item.adresse ?? ""),
+    image: String(item.image ?? ""),
+    statusId: Number(item.statusId ?? 1),
+    isBaseCompte:
+      item.isBaseCompte === true ||
+      item.isBaseCompte === "true" ||
+      item.isBaseCompte === "1",
+    priceConv: Number(item.priceConv ?? 0),
+    baseCompteId:
+      item.baseCompteId != null
+        ? Number(item.baseCompteId)
+        : undefined,
+  } as unknown as Compte;
+};
+
+// ==========================================
+// EXTRACTION DES BONS BACKEND
+// ==========================================
+
+const extractBons = (response: unknown): BonReception[] => {
+  if (Array.isArray(response)) {
+    return response as BonReception[];
+  }
+
+  if (response && typeof response === "object") {
+    const result = response as Record<string, unknown>;
+    const data = result.data ?? result.bons;
+
+    if (Array.isArray(data)) {
+      return data as BonReception[];
+    }
+  }
+
+  return [];
+};
 
 // ==========================================
 // COLONNES DES BONS DE RÉCEPTION
@@ -133,17 +218,29 @@ export default function AjouterModifierPage({
 }: AjouterModifierPageProps) {
   const isEditing = Boolean(compte);
 
-  // ==========================================
-  // COMPTE TROUVÉ
-  // ==========================================
+  const [loading, setLoading] = useState(false);
+  const [loadingSearch, setLoadingSearch] = useState(false);
+  const [loadingBons, setLoadingBons] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
+  // Compte actuellement reconnu par le backend
   const [matchedCompte, setMatchedCompte] = useState<Compte | null>(
     () => compte ?? null
   );
 
-  // En modification, conserver le compte concerné.
-  // En ajout, utiliser le compte trouvé par téléphone.
-  const activeCompte = isEditing ? compte : matchedCompte;
+  // Bons de réception du compte reconnu
+  const [bonsDuCompte, setBonsDuCompte] = useState<BonReception[]>([]);
+
+  // Gestion des recherches successives
+  const searchSequence = useRef(0);
+  const bonsSequence = useRef(0);
+  const lastPhone = useRef(normalizePhone(compte?.mobile));
+
+  // ==========================================
+  // COMPTE ACTIF
+  // ==========================================
+
+  const activeCompte = matchedCompte;
 
   // ==========================================
   // VALEURS INITIALES
@@ -171,64 +268,191 @@ export default function AjouterModifierPage({
   );
 
   // ==========================================
-  // RECHERCHE DU COMPTE PAR TÉLÉPHONE
+  // RÉCUPÉRER LES BONS DU COMPTE
   // ==========================================
 
-  const handleValuesChange = (
-    values: FormValues
-  ): FormValues | void => {
-    // En modification, on conserve le compte actuel.
-    if (isEditing) return;
+  const loadBonsByCompte = useCallback(async (compteId: number) => {
+    const currentRequest = ++bonsSequence.current;
 
-    const phone = (values.mobile ?? "").replace(/\s/g, "");
+    try {
+      setLoadingBons(true);
+      setBonsDuCompte([]);
 
-    if (!phone) {
-      setMatchedCompte(null);
-      return;
+      // GET /reception/getListBean?searche=
+      const response = await getListBean("");
+
+      if (currentRequest !== bonsSequence.current) return;
+
+      const allBons = extractBons(response);
+
+      const filteredBons = allBons.filter(
+        (bon) => String(bon.compteId) === String(compteId)
+      );
+
+      setBonsDuCompte(filteredBons);
+    } catch (error) {
+      if (currentRequest !== bonsSequence.current) return;
+
+      console.error("Erreur récupération des bons :", error);
+      setBonsDuCompte([]);
+    } finally {
+      if (currentRequest === bonsSequence.current) {
+        setLoadingBons(false);
+      }
+    }
+  }, []);
+
+  // ==========================================
+  // INITIALISATION EN MODE MODIFICATION
+  // ==========================================
+
+  useEffect(() => {
+    searchSequence.current++;
+    bonsSequence.current++;
+
+    setMatchedCompte(compte ?? null);
+    setBonsDuCompte([]);
+
+    lastPhone.current = normalizePhone(compte?.mobile);
+
+    if (compte?.id) {
+      loadBonsByCompte(Number(compte.id));
+    } else {
+      setLoadingBons(false);
     }
 
-    const foundCompte = comptesData.find(
-      (item) =>
-        item.mobile.replace(/\s/g, "") === phone
-    );
-
-    setMatchedCompte(foundCompte ?? null);
-
-    // Aucun compte trouvé : ne rien afficher automatiquement.
-    if (!foundCompte) return;
-
-    // Remplir automatiquement les informations du compte.
-    return {
-      image: foundCompte.image ?? "",
-      name: foundCompte.name,
-      mobile: foundCompte.mobile,
-      mail: foundCompte.mail ?? "",
-      adresse: foundCompte.adresse ?? "",
-      statusId: String(foundCompte.statusId ?? 1),
-      isBaseCompte: String(foundCompte.isBaseCompte ?? true),
-      priceConv:
-        foundCompte.priceConv != null
-          ? String(foundCompte.priceConv)
-          : "",
-      baseCompteId:
-        foundCompte.baseCompteId != null
-          ? String(foundCompte.baseCompteId)
-          : "",
+    return () => {
+      searchSequence.current++;
+      bonsSequence.current++;
     };
-  };
+  }, [compte?.id, loadBonsByCompte]);
 
   // ==========================================
-  // HISTORIQUE DES BONS DE RÉCEPTION
+  // RECHERCHER LE COMPTE PAR TÉLÉPHONE
   // ==========================================
 
-  const bonsDuCompte = useMemo(() => {
-    if (!activeCompte) return [];
+  const handleValuesChange = useCallback(
+    async (values: FormValues): Promise<FormValues | void> => {
+      const phone = normalizePhone(values.mobile);
 
-    return bonsReceptionData.filter(
-      (bon) =>
-        bon.compteId.toString() === activeCompte.id.toString()
-    );
-  }, [activeCompte]);
+      // Éviter les appels si le téléphone n'a pas changé
+      if (phone === lastPhone.current) return;
+
+      lastPhone.current = phone;
+
+      // Invalider les recherches précédentes
+      const requestId = ++searchSequence.current;
+
+      setErrorMessage("");
+
+      if (!phone) {
+        setMatchedCompte(null);
+        setBonsDuCompte([]);
+
+        bonsSequence.current++;
+
+        return {
+          image: "",
+          name: "",
+          mail: "",
+          adresse: "",
+          statusId: "1",
+          isBaseCompte: "true",
+          priceConv: "",
+          baseCompteId: "",
+        };
+      }
+
+      // Ne rechercher qu'un numéro suffisamment complet
+      if (phone.length < 8) {
+        setMatchedCompte(null);
+        setBonsDuCompte([]);
+        bonsSequence.current++;
+        return;
+      }
+
+      try {
+        setLoadingSearch(true);
+
+        // 1. Rechercher le compte par téléphone
+        // GET /reception/getCompte?phone=...
+        const response = await getCompteByPhone(phone);
+
+        if (requestId !== searchSequence.current) return;
+
+        const foundCompte = extractCompte(response);
+
+        // 2. Si aucun compte n'existe
+        if (!foundCompte) {
+          setMatchedCompte(null);
+          setBonsDuCompte([]);
+          bonsSequence.current++;
+
+          return {
+            image: "",
+            name: "",
+            mail: "",
+            adresse: "",
+            statusId: "1",
+            isBaseCompte: "true",
+            priceConv: "",
+            baseCompteId: "",
+          };
+        }
+
+        // 3. Afficher le compte trouvé
+        setMatchedCompte(foundCompte);
+
+        // 4. Récupérer les bons correspondants
+        await loadBonsByCompte(Number(foundCompte.id));
+
+        if (requestId !== searchSequence.current) return;
+
+        // 5. Remplir automatiquement les champs
+        return {
+          image: foundCompte.image ?? "",
+          name: foundCompte.name ?? "",
+          mobile: foundCompte.mobile ?? phone,
+          mail: foundCompte.mail ?? "",
+          adresse: foundCompte.adresse ?? "",
+          statusId: String(foundCompte.statusId ?? 1),
+          isBaseCompte: String(foundCompte.isBaseCompte ?? true),
+          priceConv:
+            foundCompte.priceConv != null
+              ? String(foundCompte.priceConv)
+              : "",
+          baseCompteId:
+            foundCompte.baseCompteId != null
+              ? String(foundCompte.baseCompteId)
+              : "",
+        };
+      } catch (error) {
+        if (requestId !== searchSequence.current) return;
+
+        console.error("Erreur recherche compte :", error);
+
+        setMatchedCompte(null);
+        setBonsDuCompte([]);
+        bonsSequence.current++;
+
+        return {
+          name: "",
+          mail: "",
+          adresse: "",
+          image: "",
+          statusId: "1",
+          isBaseCompte: "true",
+          priceConv: "",
+          baseCompteId: "",
+        };
+      } finally {
+        if (requestId === searchSequence.current) {
+          setLoadingSearch(false);
+        }
+      }
+    },
+    [loadBonsByCompte]
+  );
 
   // ==========================================
   // SECTION DU FORMULAIRE
@@ -248,8 +472,6 @@ export default function AjouterModifierPage({
       columns: 3,
 
       fields: [
-        // IMAGE À GAUCHE : 4 LIGNES
-
         {
           name: "image",
           label: "Photo du compte",
@@ -257,9 +479,6 @@ export default function AjouterModifierPage({
           accept: "image/png,image/jpeg,image/webp",
           rowSpan: 4,
         },
-
-        // LIGNE 1
-
         {
           name: "name",
           label: "Nom du compte",
@@ -272,9 +491,6 @@ export default function AjouterModifierPage({
           placeholder: "Saisir le numéro de téléphone",
           required: true,
         },
-
-        // LIGNE 2
-
         {
           name: "mail",
           label: "Adresse électronique",
@@ -286,9 +502,6 @@ export default function AjouterModifierPage({
           label: "Adresse",
           placeholder: "Saisir l'adresse",
         },
-
-        // LIGNE 3
-
         {
           name: "statusId",
           label: "Statut",
@@ -311,9 +524,6 @@ export default function AjouterModifierPage({
             { label: "Compte rattaché", value: "false" },
           ],
         },
-
-        // LIGNE 4
-
         {
           name: "priceConv",
           label: "Prix de conversion",
@@ -331,11 +541,71 @@ export default function AjouterModifierPage({
   ];
 
   // ==========================================
-  // ENREGISTRER
+  // ENREGISTRER : AJOUT / MODIFICATION
   // ==========================================
 
-  const handleSubmit = (values: FormValues) => {
-    onSave(values);
+  const handleSubmit = async (values: FormValues) => {
+    if (loading) return;
+
+    try {
+      setLoading(true);
+      setErrorMessage("");
+
+      const compteData: CompteRequest = {
+        reference: compte?.reference ?? "",
+        name: String(values.name ?? "").trim(),
+        mobile: String(values.mobile ?? "").trim(),
+        priceKg: Number(values.priceConv || 0),
+        isBaseCompte: values.isBaseCompte === "true",
+      };
+
+      if (!compteData.name || !compteData.mobile) {
+        setErrorMessage(
+          "Veuillez renseigner le nom et le téléphone du compte."
+        );
+        return;
+      }
+
+      if (
+        !Number.isFinite(compteData.priceKg) ||
+        compteData.priceKg < 0
+      ) {
+        setErrorMessage("Le prix de conversion est invalide.");
+        return;
+      }
+
+      // Éviter de créer un doublon en mode ajout
+      if (!isEditing && matchedCompte) {
+        setErrorMessage(
+          "Ce numéro existe déjà dans la base de données."
+        );
+        return;
+      }
+
+      if (isEditing && compte) {
+        await updateCompte({
+          ...compteData,
+          id: Number(compte.id),
+        });
+      } else {
+        await saveCompte(compteData);
+      }
+
+      await onSave(values);
+    } catch (error: any) {
+      console.error("Erreur enregistrement compte :", {
+        status: error.response?.status,
+        data: error.response?.data,
+        message: error.message,
+      });
+
+      setErrorMessage(
+        error.response?.data?.message ??
+          "Une erreur est survenue lors de l'enregistrement du compte."
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
   // ==========================================
@@ -343,50 +613,72 @@ export default function AjouterModifierPage({
   // ==========================================
 
   return (
-    <FormPageLayout
-      title={
-        compte
-          ? "Modifier le compte"
-          : "Ajouter un compte"
-      }
-      description={
-        compte
-          ? "Modifiez les informations du compte."
-          : "Remplissez le formulaire pour créer un nouveau compte."
-      }
-      icon={<Wallet size={20} />}
-      sections={sections}
-      initialValues={initialValues}
-      onValuesChange={handleValuesChange}
-      submitLabel={
-        compte
-          ? "Enregistrer les modifications"
-          : "Ajouter le compte"
-      }
-      onSubmit={handleSubmit}
-      onCancel={onCancel}
-      extraContent={
-        activeCompte ? (
-          <div className="rounded-xl border border-[#E5EBE6] bg-white p-4 sm:p-5 dark:border-[#35463B] dark:bg-[#1C2921]">
-            <DataTableSection<BonReception>
-              title="Historique des bons de réception"
-              data={bonsDuCompte}
-              columns={bonColumns}
-              getRowKey={(row) => row.id}
-              badgeLabel={`${bonsDuCompte.length} bon(s)`}
-              minWidth="1100px"
-            />
+    <div className="space-y-4">
+      {errorMessage && (
+        <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300">
+          {errorMessage}
+        </div>
+      )}
 
-            {bonsDuCompte.length === 0 && (
-              <EmptyState
-                title="Aucun bon de réception"
-                description="Aucun bon de réception trouvé pour ce compte."
-                compact
+      {loadingSearch && (
+        <div className="rounded-xl border border-[#E5EBE6] bg-white px-4 py-3 text-sm text-[#47785B] dark:border-[#35463B] dark:bg-[#1C2921] dark:text-[#91C5A1]">
+          Recherche du compte en cours...
+        </div>
+      )}
+
+      <FormPageLayout
+        title={
+          compte
+            ? "Modifier le compte"
+            : "Ajouter un compte"
+        }
+        description={
+          compte
+            ? "Modifiez les informations du compte."
+            : "Remplissez le formulaire pour créer un nouveau compte."
+        }
+        icon={<Wallet size={20} />}
+        sections={sections}
+        initialValues={initialValues}
+        onValuesChange={handleValuesChange}
+        submitLabel={
+          loading
+            ? "Enregistrement..."
+            : compte
+              ? "Enregistrer les modifications"
+              : "Ajouter le compte"
+        }
+        onSubmit={handleSubmit}
+        onCancel={onCancel}
+        extraContent={
+          activeCompte ? (
+            <div className="rounded-xl border border-[#E5EBE6] bg-white p-4 sm:p-5 dark:border-[#35463B] dark:bg-[#1C2921]">
+              <DataTableSection<BonReception>
+                title="Historique des bons de réception"
+                data={bonsDuCompte}
+                columns={bonColumns}
+                getRowKey={(row) => row.id}
+                badgeLabel={`${bonsDuCompte.length} bon(s)`}
+                minWidth="1100px"
               />
-            )}
-          </div>
-        ) : null
-      }
-    />
+
+              {loadingBons && (
+                <p className="py-3 text-center text-sm text-gray-500">
+                  Chargement des bons de réception...
+                </p>
+              )}
+
+              {!loadingBons && bonsDuCompte.length === 0 && (
+                <EmptyState
+                  title="Aucun bon de réception"
+                  description="Aucun bon de réception trouvé pour ce compte."
+                  compact
+                />
+              )}
+            </div>
+          ) : null
+        }
+      />
+    </div>
   );
 }

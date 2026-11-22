@@ -450,3 +450,4 @@ export {
   cardTableVariants,
   cardFooterVariants,
 };
+export default Card;

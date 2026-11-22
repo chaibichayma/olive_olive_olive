@@ -1,6 +1,6 @@
-
 export interface Compte {
   id: number;
+  reference?: string;
   name: string;
   adresse: string;
   mobile: string;

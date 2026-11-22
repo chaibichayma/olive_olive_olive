@@ -22,7 +22,9 @@ interface FormPageLayoutProps {
   dateTitle?: string;
 
   submitLabel?: string;
-  onValuesChange?: (values: FormValues) => FormValues | void;
+  onValuesChange?: (
+    values: FormValues
+  ) => FormValues | void | Promise<FormValues | void>;
   extraContent?: ReactNode;
 
   onSubmit: (values: FormValues) => void;

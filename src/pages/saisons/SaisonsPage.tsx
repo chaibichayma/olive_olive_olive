@@ -1,6 +1,5 @@
 
-
-import { useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   CalendarDays,
   Layers,
@@ -10,7 +9,6 @@ import {
 import { Card, Badge } from "../../components/ui";
 import { PageHeader } from "../../components/common";
 
-import { saisonsData } from "./data/saison.data";
 import type { Saison } from "./types/saison.types";
 
 import AjouterModifierPage from "./AjouterModifierPage";
@@ -31,63 +29,11 @@ import type {
 import EmptyState from "../../components/common/EmptyState";
 import RowActions from "../../components/common/RowActions";
 
-// ==========================================
-// FILTRES DES SAISONS
-// ==========================================
-
-const saisonFilters: FilterField[] = [
-  {
-    type: "select",
-    name: "year",
-    label: "Année",
-    placeholder: "Toutes les années",
-    icon: CalendarDays,
-    options: [
-      ...new Set(saisonsData.map((saison) => saison.year)),
-    ]
-      .sort((a, b) => b - a)
-      .map((year) => ({
-        label: String(year),
-        value: String(year),
-      })),
-  },
-  {
-    type: "date",
-    name: "beginDate",
-    label: "Date début",
-  },
-  {
-    type: "date",
-    name: "endDate",
-    label: "Date fin",
-  },
-  {
-    type: "select",
-    name: "statusId",
-    label: "Statut",
-    placeholder: "Tous les statuts",
-    icon: Layers,
-    options: [
-      { label: "En cours", value: "1" },
-      { label: "Clôturée", value: "2" },
-    ],
-  },
-];
-
-// ==========================================
-// STATUT DE LA SAISON
-// ==========================================
-
-function getStatusVariant(statusId: number) {
-  switch (statusId) {
-    case 1:
-      return "success" as const;
-    case 2:
-      return "neutral" as const;
-    default:
-      return "neutral" as const;
-  }
-}
+import {
+  getListBean,
+  getSaisonById,
+  deleteSaison,
+} from "../../services/saisonService";
 
 // ==========================================
 // PAGE CONSULTATION DES SAISONS
@@ -99,16 +45,115 @@ export default function SaisonsPage() {
   // ÉTATS
   // ==========================================
 
-  const [saisons, setSaisons] =
-    useState<Saison[]>(saisonsData);
-
-  const [filteredSaisons, setFilteredSaisons] =
-    useState<Saison[]>(saisonsData);
+  const [saisons, setSaisons] = useState<Saison[]>([]);
+  const [filteredSaisons, setFilteredSaisons] = useState<Saison[]>([]);
 
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [selectedSaison, setSelectedSaison] = useState<Saison | null>(null);
 
-  const [selectedSaison, setSelectedSaison] =
-    useState<Saison | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [actionLoading, setActionLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+
+  // ==========================================
+  // RÉCUPÉRER LES SAISONS DEPUIS LE BACKEND
+  // GET /season/getListBean
+  // ==========================================
+
+  const fetchSaisons = useCallback(async () => {
+    try {
+      setLoading(true);
+      setErrorMessage("");
+
+      const data = await getListBean();
+
+      // Adaptation au type Saison utilisé par la page
+      const result = data as unknown as Saison[];
+
+      setSaisons(result);
+      setFilteredSaisons(result);
+
+    } catch (error) {
+      console.error("Erreur chargement des saisons :", error);
+      setErrorMessage(
+        "Impossible de récupérer les saisons depuis le serveur."
+      );
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // ==========================================
+  // CHARGEMENT INITIAL
+  // ==========================================
+
+  useEffect(() => {
+    fetchSaisons();
+  }, [fetchSaisons]);
+
+  // ==========================================
+  // FILTRES DES SAISONS
+  // ==========================================
+
+  const saisonFilters: FilterField[] = useMemo(
+    () => [
+      {
+        type: "select",
+        name: "year",
+        label: "Année",
+        placeholder: "Toutes les années",
+        icon: CalendarDays,
+        options: [
+          ...new Set(
+            saisons.map((saison) => saison.year)
+          ),
+        ]
+          .filter((year) => year != null)
+          .sort((a, b) => Number(b) - Number(a))
+          .map((year) => ({
+            label: String(year),
+            value: String(year),
+          })),
+      },
+      {
+        type: "date",
+        name: "beginDate",
+        label: "Date début",
+      },
+      {
+        type: "date",
+        name: "endDate",
+        label: "Date fin",
+      },
+      {
+        type: "select",
+        name: "statusId",
+        label: "Statut",
+        placeholder: "Tous les statuts",
+        icon: Layers,
+        options: [
+          { label: "En cours", value: "1" },
+          { label: "Clôturée", value: "2" },
+        ],
+      },
+    ],
+    [saisons]
+  );
+
+  // ==========================================
+  // STATUT DE LA SAISON
+  // ==========================================
+
+  function getStatusVariant(statusId: number) {
+    switch (statusId) {
+      case 1:
+        return "success" as const;
+      case 2:
+        return "neutral" as const;
+      default:
+        return "neutral" as const;
+    }
+  }
 
   // ==========================================
   // OUVRIR LE FORMULAIRE D'AJOUT
@@ -121,11 +166,27 @@ export default function SaisonsPage() {
 
   // ==========================================
   // OUVRIR LE FORMULAIRE DE MODIFICATION
+  // GET /season/getId/{id}
   // ==========================================
 
-  const handleEdit = (saison: Saison) => {
-    setSelectedSaison(saison);
-    setIsFormOpen(true);
+  const handleEdit = async (saison: Saison) => {
+    try {
+      setActionLoading(true);
+      setErrorMessage("");
+
+      const data = await getSaisonById(Number(saison.id));
+
+      setSelectedSaison(data as unknown as Saison);
+      setIsFormOpen(true);
+
+    } catch (error) {
+      console.error("Erreur récupération de la saison :", error);
+      setErrorMessage(
+        "Impossible de récupérer les informations de cette saison."
+      );
+    } finally {
+      setActionLoading(false);
+    }
   };
 
   // ==========================================
@@ -135,98 +196,77 @@ export default function SaisonsPage() {
   const handleCancel = () => {
     setIsFormOpen(false);
     setSelectedSaison(null);
+    setErrorMessage("");
   };
 
   // ==========================================
   // ENREGISTRER : AJOUT / MODIFICATION
+  // Les API sont appelées dans AjouterModifierPage
   // ==========================================
 
-  const handleSave = (values: FormValues) => {
+  const handleSave = async (_values: FormValues) => {
+    // L'ajout ou la modification a déjà réussi
+    // dans AjouterModifierPage.
+    // On recharge les données depuis le backend.
 
-    // Vérifier la cohérence des dates
-    if (
-      values.beginDate &&
-      values.endDate &&
-      values.endDate < values.beginDate
-    ) {
-      window.alert(
-        "La date de fin doit être postérieure à la date de début."
-      );
-      return;
-    }
+    await fetchSaisons();
 
-    const saisonData: Saison = {
-      id: selectedSaison
-        ? selectedSaison.id
-        : Math.max(0, ...saisons.map((item) => item.id)) + 1,
-
-      beginDate: values.beginDate,
-      endDate: values.endDate,
-      statusId: Number(values.statusId),
-      year: Number(values.year),
-      priceKilo: Number(values.priceKilo),
-      priceAchat: Number(values.priceAchat),
-      priceVente: Number(values.priceVente),
-      nbreCaisses: Number(values.nbreCaisses),
-    };
-
-    let updatedSaisons: Saison[];
-
-    if (selectedSaison) {
-
-      // MODIFICATION
-
-      updatedSaisons = saisons.map((item) =>
-        item.id === selectedSaison.id
-          ? saisonData
-          : item
-      );
-
-    } else {
-
-      // AJOUT
-
-      updatedSaisons = [
-        ...saisons,
-        saisonData,
-      ];
-    }
-
-    setSaisons(updatedSaisons);
-    setFilteredSaisons(updatedSaisons);
-
-    handleCancel();
+    setIsFormOpen(false);
+    setSelectedSaison(null);
   };
 
   // ==========================================
   // SUPPRIMER UNE SAISON
+  // POST /season/delete/{id}
   // ==========================================
 
-  const handleDelete = (saison: Saison) => {
+  
 
-    const confirmed = window.confirm(
-      `Voulez-vous vraiment supprimer la saison "${saison.year}" ?`
+const handleDelete = async (saison: Saison) => {
+  const confirmed = window.confirm(
+    `Voulez-vous vraiment supprimer la saison "${saison.year}" ?`
+  );
+
+  if (!confirmed) return;
+
+  try {
+    setActionLoading(true);
+    setErrorMessage("");
+
+    // Récupérer l'identifiant réel
+    const id = Number(saison.id);
+
+    console.log("Saison sélectionnée :", saison);
+    console.log("ID envoyé pour suppression :", id);
+
+    if (!Number.isInteger(id) || id <= 0) {
+      throw new Error("Identifiant de saison invalide.");
+    }
+
+    // Suppression par ID
+    await deleteSaison(id);
+
+    // Actualiser la liste
+    await fetchSaisons();
+
+  } catch (error) {
+    console.error("Erreur suppression de la saison :", error);
+
+    setErrorMessage(
+      "Impossible de supprimer cette saison. Veuillez réessayer."
     );
+  } finally {
+    setActionLoading(false);
+  }
+};
 
-    if (!confirmed) return;
 
-    const updatedSaisons = saisons.filter(
-      (item) => item.id !== saison.id
-    );
-
-    setSaisons(updatedSaisons);
-
-    setFilteredSaisons((previous) =>
-      previous.filter((item) => item.id !== saison.id)
-    );
-  };
 
   // ==========================================
   // APPLIQUER LES FILTRES
   // ==========================================
 
   const handleFilter = (filters: FilterValues) => {
-
     const result = saisons.filter((saison) => {
 
       // Filtre par année
@@ -319,21 +359,21 @@ export default function SaisonsPage() {
       title: "Prix / Kg olives",
       align: "right",
       className: "whitespace-nowrap font-semibold text-[#46534B]",
-      render: (row) => `${row.priceKilo.toFixed(3)} DT`,
+      render: (row) => `${Number(row.priceKilo).toFixed(3)} DT`,
     },
     {
       key: "priceAchat",
       title: "Prix achat / L",
       align: "right",
       className: "whitespace-nowrap",
-      render: (row) => `${row.priceAchat.toFixed(3)} DT`,
+      render: (row) => `${Number(row.priceAchat).toFixed(3)} DT`,
     },
     {
       key: "priceVente",
       title: "Prix vente / L",
       align: "right",
       className: "whitespace-nowrap",
-      render: (row) => `${row.priceVente.toFixed(3)} DT`,
+      render: (row) => `${Number(row.priceVente).toFixed(3)} DT`,
     },
     {
       key: "nbreCaisses",
@@ -392,6 +432,22 @@ export default function SaisonsPage() {
         onAdd={handleAdd}
       />
 
+      {/* ERREUR */}
+
+      {errorMessage && (
+        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-300">
+          {errorMessage}
+        </div>
+      )}
+
+      {/* CHARGEMENT */}
+
+      {(loading || actionLoading) && (
+        <div className="rounded-lg border border-[#E7ECE9] bg-white p-4 text-sm text-[#47785B] dark:border-[#35463B] dark:bg-[#1C2921] dark:text-[#91C5A1]">
+          Chargement en cours...
+        </div>
+      )}
+
       {/* FILTRES */}
 
       <FilterPanel
@@ -405,10 +461,13 @@ export default function SaisonsPage() {
       {/* TABLEAU DES SAISONS */}
 
       <Card padding="md">
-
         <div className="mt-4">
 
-          {filteredSaisons.length > 0 ? (
+          {loading ? (
+            <div className="py-10 text-center text-sm text-[#89948C] dark:text-[#A8B8AC]">
+              Chargement des saisons...
+            </div>
+          ) : filteredSaisons.length > 0 ? (
             <Pagination
               key={filteredSaisons.map((item) => item.id).join("-")}
               data={filteredSaisons}
@@ -429,12 +488,15 @@ export default function SaisonsPage() {
             <EmptyState
               icon={<ReceiptText size={30} />}
               title="Aucune saison trouvée"
-              description="Essayez de modifier vos critères de filtrage."
+              description={
+                saisons.length === 0
+                  ? "Aucune saison n'est disponible pour le moment."
+                  : "Essayez de modifier vos critères de filtrage."
+              }
             />
           )}
 
         </div>
-
       </Card>
 
       {/* FOOTER */}

@@ -1,6 +1,5 @@
 
-
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   Users,
   Search,
@@ -15,7 +14,6 @@ import {
 import { Card } from "../../components/ui";
 import { PageHeader } from "../../components/common";
 
-import { utilisateursData } from "./data/utilisateur.data";
 import type { Utilisateur } from "./types/utilisateur.types";
 
 import AjouterModifierPage from "./AjouterModifierPage";
@@ -29,8 +27,40 @@ import type {
   FilterValues,
 } from "../../components/filters";
 
+import type { FormValues } from "../../components/forms";
+
 import EmptyState from "../../components/common/EmptyState";
 import ContactCards from "../../components/common/ContactCards";
+
+import {
+  getListBean,
+  getUserById,
+  deleteUser,
+} from "../../services/userService";
+
+import type { User as UserApi } from "../../models/user.model";
+
+// ==========================================
+// CONVERSION BACKEND -> FRONTEND
+// ==========================================
+
+const mapApiUser = (item: UserApi): Utilisateur => {
+  if (item.id == null || !Number.isFinite(Number(item.id))) {
+    console.error("Identifiant utilisateur invalide :", item);
+    throw new Error("Identifiant invalide pour un utilisateur.");
+  }
+
+  return {
+    id: Number(item.id),
+    displayName: item.displayName ?? "",
+    userName: item.userName ?? "",
+    mail: item.mail ?? "",
+    password: "",
+    userCode: item.userCode ?? "",
+    isActive: item.isActive ?? true,
+    image: "",
+  };
+};
 
 // ==========================================
 // FILTRES DES UTILISATEURS
@@ -82,15 +112,57 @@ export default function UtilisateursPage() {
   // ==========================================
 
   const [utilisateurs, setUtilisateurs] =
-    useState<Utilisateur[]>(utilisateursData);
+    useState<Utilisateur[]>([]);
 
   const [filteredUtilisateurs, setFilteredUtilisateurs] =
-    useState<Utilisateur[]>(utilisateursData);
+    useState<Utilisateur[]>([]);
 
   const [selectedUtilisateur, setSelectedUtilisateur] =
     useState<Utilisateur | null>(null);
 
   const [showForm, setShowForm] = useState(false);
+
+  const [loading, setLoading] = useState(false);
+  const [actionLoading, setActionLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+
+  // ==========================================
+  // CHARGER LES UTILISATEURS
+  // GET /user/getListBean
+  // ==========================================
+
+  const fetchUtilisateurs = useCallback(async () => {
+    try {
+      setLoading(true);
+      setErrorMessage("");
+
+      const data = await getListBean();
+
+      console.log("Liste des utilisateurs reçue :", data);
+
+      const result = data.map(mapApiUser);
+
+      setUtilisateurs(result);
+      setFilteredUtilisateurs(result);
+
+    } catch (error) {
+      console.error("Erreur chargement des utilisateurs :", error);
+
+      setErrorMessage(
+        "Impossible de récupérer les utilisateurs depuis le serveur."
+      );
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // ==========================================
+  // CHARGEMENT INITIAL
+  // ==========================================
+
+  useEffect(() => {
+    fetchUtilisateurs();
+  }, [fetchUtilisateurs]);
 
   // ==========================================
   // OUVRIR LE FORMULAIRE D'AJOUT
@@ -98,91 +170,84 @@ export default function UtilisateursPage() {
 
   const handleAdd = () => {
     setSelectedUtilisateur(null);
+    setErrorMessage("");
     setShowForm(true);
   };
 
   // ==========================================
   // OUVRIR LE FORMULAIRE DE MODIFICATION
+  // GET /user/getId/{id}
   // ==========================================
 
-  const handleEdit = (utilisateur: Utilisateur) => {
-    setSelectedUtilisateur(utilisateur);
-    setShowForm(true);
+  const handleEdit = async (utilisateur: Utilisateur) => {
+    try {
+      setActionLoading(true);
+      setErrorMessage("");
+
+      const data = await getUserById(utilisateur.id);
+
+      const mappedUtilisateur = mapApiUser(data);
+
+      setSelectedUtilisateur(mappedUtilisateur);
+      setShowForm(true);
+
+    } catch (error) {
+      console.error("Erreur récupération utilisateur :", error);
+
+      setErrorMessage(
+        "Impossible de récupérer les informations de cet utilisateur."
+      );
+    } finally {
+      setActionLoading(false);
+    }
   };
 
   // ==========================================
   // SUPPRIMER UN UTILISATEUR
+  // POST /user/delete/{id}
   // ==========================================
 
-  const handleDelete = (utilisateur: Utilisateur) => {
+  const handleDelete = async (utilisateur: Utilisateur) => {
     const confirmed = window.confirm(
       `Voulez-vous vraiment supprimer l'utilisateur ${utilisateur.displayName} ?`
     );
 
     if (!confirmed) return;
 
-    const updatedUtilisateurs = utilisateurs.filter(
-      (item) => item.id !== utilisateur.id
-    );
+    try {
+      setActionLoading(true);
+      setErrorMessage("");
 
-    setUtilisateurs(updatedUtilisateurs);
-    setFilteredUtilisateurs((previous) =>
-      previous.filter((item) => item.id !== utilisateur.id)
-    );
+      const response = await deleteUser(utilisateur.id);
+
+      if (response.isValid === false) {
+        throw new Error(
+          response.message || "La suppression a échoué."
+        );
+      }
+
+      // Actualiser la liste depuis le backend
+      await fetchUtilisateurs();
+
+    } catch (error) {
+      console.error("Erreur suppression utilisateur :", error);
+
+      setErrorMessage(
+        "Impossible de supprimer cet utilisateur."
+      );
+    } finally {
+      setActionLoading(false);
+    }
   };
 
   // ==========================================
   // ENREGISTRER AJOUT / MODIFICATION
+  // Les appels save/update sont dans le formulaire.
   // ==========================================
 
-  const handleSave = (values: FilterValues) => {
-    const utilisateurData: Utilisateur = {
-      id: selectedUtilisateur
-        ? selectedUtilisateur.id
-        : Math.max(0, ...utilisateurs.map((item) => item.id)) + 1,
+  const handleSave = async (_values: FormValues) => {
+    await fetchUtilisateurs();
 
-      displayName: values.displayName.trim(),
-      userName: values.userName.trim(),
-      mail: values.mail.trim(),
-
-      // Conserver le mot de passe existant si aucun
-      // nouveau mot de passe n'est renseigné.
-      password:
-        values.password ||
-        selectedUtilisateur?.password ||
-        "",
-
-      userCode: values.userCode.trim(),
-      isActive: values.isActive === "true",
-      image:
-        values.image ||
-        selectedUtilisateur?.image ||
-        "",
-    };
-
-    let updatedUtilisateurs: Utilisateur[];
-
-    if (selectedUtilisateur) {
-      // MODIFICATION
-
-      updatedUtilisateurs = utilisateurs.map((item) =>
-        item.id === selectedUtilisateur.id
-          ? utilisateurData
-          : item
-      );
-    } else {
-      // AJOUT
-
-      updatedUtilisateurs = [
-        ...utilisateurs,
-        utilisateurData,
-      ];
-    }
-
-    setUtilisateurs(updatedUtilisateurs);
-    setFilteredUtilisateurs(updatedUtilisateurs);
-
-    // Fermer le formulaire
     setShowForm(false);
     setSelectedUtilisateur(null);
   };
@@ -194,6 +259,7 @@ export default function UtilisateursPage() {
   const handleCancel = () => {
     setShowForm(false);
     setSelectedUtilisateur(null);
+    setErrorMessage("");
   };
 
   // ==========================================
@@ -208,27 +274,26 @@ export default function UtilisateursPage() {
         !filters.displayName ||
         utilisateur.displayName
           .toLowerCase()
-          .includes(filters.displayName.toLowerCase());
+          .includes(String(filters.displayName).toLowerCase());
 
       // Recherche par nom d'utilisateur
       const matchesUserName =
         !filters.userName ||
         utilisateur.userName
           .toLowerCase()
-          .includes(filters.userName.toLowerCase());
+          .includes(String(filters.userName).toLowerCase());
 
       // Recherche par e-mail
       const matchesMail =
         !filters.mail ||
         utilisateur.mail
           .toLowerCase()
-          .includes(filters.mail.toLowerCase());
+          .includes(String(filters.mail).toLowerCase());
 
       // Filtre par statut
       const matchesStatus =
         !filters.isActive ||
-        utilisateur.isActive ===
-          (filters.isActive === "true");
+        utilisateur.isActive === (filters.isActive === "true");
 
       return (
         matchesDisplayName &&
@@ -263,6 +328,12 @@ export default function UtilisateursPage() {
           onCancel={handleCancel}
         />
 
+        {errorMessage && (
+          <p className="text-sm text-red-600">
+            {errorMessage}
+          </p>
+        )}
+
         <Footer />
 
       </div>
@@ -295,13 +366,33 @@ export default function UtilisateursPage() {
         onReset={handleReset}
       />
 
+      {/* MESSAGE D'ERREUR */}
+
+      {errorMessage && (
+        <p className="text-sm text-red-600">
+          {errorMessage}
+        </p>
+      )}
+
       {/* CARTES DES UTILISATEURS */}
 
       <Card padding="md">
 
         <div className="mt-4">
 
-          {filteredUtilisateurs.length > 0 ? (
+          {loading ? (
+
+            <div className="py-8 text-center text-gray-500">
+              Chargement des utilisateurs...
+            </div>
+
+          ) : actionLoading ? (
+
+            <div className="py-8 text-center text-gray-500">
+              Traitement en cours...
+            </div>
+
+          ) : filteredUtilisateurs.length > 0 ? (
 
             <Pagination
               key={filteredUtilisateurs
@@ -344,7 +435,11 @@ export default function UtilisateursPage() {
             <EmptyState
               icon={<ReceiptText size={30} />}
               title="Aucun utilisateur trouvé"
-              description="Essayez de modifier vos critères de filtrage."
+              description={
+                utilisateurs.length === 0
+                  ? "Aucun utilisateur n'est disponible."
+                  : "Essayez de modifier vos critères de filtrage."
+              }
             />
 
           )}

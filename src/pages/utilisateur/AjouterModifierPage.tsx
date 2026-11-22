@@ -1,5 +1,5 @@
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { UserRound } from "lucide-react";
 
 import { FormPageLayout } from "../../components/forms";
@@ -10,13 +10,20 @@ import type {
 
 import type { Utilisateur } from "./types/utilisateur.types";
 
+import {
+  saveUser,
+  updateUser,
+} from "../../services/userService";
+
+import type { UserRequest } from "../../models/user.model";
+
 // ==========================================
 // PROPRIÉTÉS
 // ==========================================
 
 interface AjouterModifierPageProps {
   utilisateur?: Utilisateur | null;
-  onSave: (values: FormValues) => void;
+  onSave: (values: FormValues) => void | Promise<void>;
   onCancel: () => void;
 }
 
@@ -29,6 +36,11 @@ export default function AjouterModifierPage({
   onSave,
   onCancel,
 }: AjouterModifierPageProps) {
+
+  const isEditing = Boolean(utilisateur);
+
+  const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   // ==========================================
   // VALEURS INITIALES
@@ -140,11 +152,85 @@ export default function AjouterModifierPage({
   ];
 
   // ==========================================
-  // ENREGISTRER
+  // ENREGISTRER : AJOUT / MODIFICATION
   // ==========================================
 
-  const handleSubmit = (values: FormValues) => {
-    onSave(values);
+  const handleSubmit = async (values: FormValues) => {
+    if (loading) return;
+
+    try {
+      setLoading(true);
+      setErrorMessage("");
+
+      // Préparer les données selon le modèle Swagger
+      const userData: UserRequest = {
+        displayName: String(values.displayName ?? "").trim(),
+        userName: String(values.userName ?? "").trim(),
+        mail: String(values.mail ?? "").trim(),
+        userCode: String(values.userCode ?? "").trim(),
+        isActive: values.isActive === "true",
+        roles: [],
+      };
+
+      // Ajouter le mot de passe seulement s'il est renseigné
+      const password = String(values.password ?? "").trim();
+
+      if (password) {
+        userData.password = password;
+      }
+
+      // Vérifications
+      if (
+        !userData.displayName ||
+        !userData.userName ||
+        !userData.mail ||
+        !userData.userCode
+      ) {
+        setErrorMessage(
+          "Veuillez remplir tous les champs obligatoires."
+        );
+        return;
+      }
+
+      if (!isEditing && !password) {
+        setErrorMessage("Le mot de passe est obligatoire.");
+        return;
+      }
+
+      if (isEditing && utilisateur) {
+        // MODIFICATION
+        await updateUser({
+          ...userData,
+          id: utilisateur.id,
+        });
+
+        console.log("Utilisateur modifié avec succès.");
+
+      } else {
+        // AJOUT
+        await saveUser(userData);
+
+        console.log("Utilisateur créé avec succès.");
+      }
+
+      // Actualiser la liste dans la page parent
+      await onSave(values);
+
+    } catch (error: any) {
+      console.error("Erreur enregistrement utilisateur :", {
+        status: error.response?.status,
+        data: error.response?.data,
+        message: error.message,
+      });
+
+      setErrorMessage(
+        error.response?.data?.message ??
+          "Une erreur est survenue lors de l'enregistrement de l'utilisateur."
+      );
+
+    } finally {
+      setLoading(false);
+    }
   };
 
   // ==========================================
@@ -152,27 +238,39 @@ export default function AjouterModifierPage({
   // ==========================================
 
   return (
-    <FormPageLayout
-      title={
-        utilisateur
-          ? "Modifier l'utilisateur"
-          : "Ajouter un utilisateur"
-      }
-      description={
-        utilisateur
-          ? "Modifiez les informations de l'utilisateur."
-          : "Remplissez le formulaire pour créer un nouvel utilisateur."
-      }
-      icon={<UserRound size={20} />}
-      sections={sections}
-      initialValues={initialValues}
-      submitLabel={
-        utilisateur
-          ? "Enregistrer les modifications"
-          : "Ajouter l'utilisateur"
-      }
-      onSubmit={handleSubmit}
-      onCancel={onCancel}
-    />
+    <div className="space-y-4">
+
+      {errorMessage && (
+        <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300">
+          {errorMessage}
+        </div>
+      )}
+
+      <FormPageLayout
+        title={
+          utilisateur
+            ? "Modifier l'utilisateur"
+            : "Ajouter un utilisateur"
+        }
+        description={
+          utilisateur
+            ? "Modifiez les informations de l'utilisateur."
+            : "Remplissez le formulaire pour créer un nouvel utilisateur."
+        }
+        icon={<UserRound size={20} />}
+        sections={sections}
+        initialValues={initialValues}
+        submitLabel={
+          loading
+            ? "Enregistrement..."
+            : utilisateur
+              ? "Enregistrer les modifications"
+              : "Ajouter l'utilisateur"
+        }
+        onSubmit={handleSubmit}
+        onCancel={onCancel}
+      />
+
+    </div>
   );
 }

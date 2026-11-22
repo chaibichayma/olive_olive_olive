@@ -67,7 +67,9 @@ interface EntityFormProps {
   sections: FormSection[];
   initialValues?: FormValues;
   submitLabel?: string;
-  onValuesChange?: (values: FormValues) => FormValues | void;
+  onValuesChange?: (
+  values: FormValues
+) => FormValues | void | Promise<FormValues | void>;
   extraContent?: ReactNode;
   onSubmit: (values: FormValues) => void;
   onCancel: () => void;
@@ -105,24 +107,34 @@ export default function EntityForm({
   // MODIFIER UNE VALEUR
   // ==========================================
 
-  const handleChange = (name: string, value: string) => {
+  // ==========================================
+// MODIFIER UNE VALEUR
+// ==========================================
+
+const handleChange = async (name: string, value: string) => {
   const updatedValues = {
     ...values,
     [name]: value,
   };
 
+  // Mettre à jour immédiatement le champ saisi
   setValues(updatedValues);
 
-  const additionalValues = onValuesChange?.(updatedValues);
+  try {
+    // Attendre la réponse de la recherche backend
+    const additionalValues = await onValuesChange?.(updatedValues);
 
-  if (additionalValues) {
-    setValues((previous) => ({
-      ...previous,
-      ...additionalValues,
-    }));
+    // Appliquer les informations du compte trouvé
+    if (additionalValues) {
+      setValues((previous) => ({
+        ...previous,
+        ...additionalValues,
+      }));
+    }
+  } catch (error) {
+    console.error("Erreur lors de la mise à jour :", error);
   }
 };
-
   // ==========================================
   // SOUMETTRE LE FORMULAIRE
   // ==========================================
@@ -170,3 +182,4 @@ export default function EntityForm({
     </form>
   );
 }
+

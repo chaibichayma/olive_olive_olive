@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Droplets,
   Layers,
@@ -9,9 +9,7 @@ import {
 import { Card } from "../../components/ui";
 import { PageHeader } from "../../components/common";
 
-import { citernesData } from "./data/citerne.data";
 import type { Citerne } from "./types/citerne.types";
-
 import AjouterModifierPage from "./AjouterModifierPage";
 import type { FormValues } from "../../components/forms";
 
@@ -30,54 +28,135 @@ import type {
 import EmptyState from "../../components/common/EmptyState";
 import RowActions from "../../components/common/RowActions";
 
+import {
+  getListBean,
+  getCiterneById,
+  deleteCiterne,
+} from "../../services/citerneService";
+
+import type {
+  Citerne as CiterneApi,
+} from "../../models/citerne.model";
+
 // ==========================================
-// FILTRES DES CITERNES
+// TYPE FRONTEND
 // ==========================================
 
-const capacities = [
-  ...new Set(citernesData.map((citerne) => citerne.capacite)),
-].sort((a, b) => a - b);
+type CiterneUI = Citerne & {
+  citerneId?: number;
+};
 
-const citerneFilters: FilterField[] = [
-  {
-    type: "search",
-    name: "reference",
-    label: "Référence",
-    placeholder: "Rechercher par référence...",
-  },
-  {
-    type: "select",
-    name: "capacite",
-    label: "Capacité (L)",
-    placeholder: "Toutes les capacités",
-    icon: Layers,
-    options: capacities.map((capacite) => ({
-      label: `${capacite.toLocaleString("fr-FR")} L`,
-      value: String(capacite),
-    })),
-  },
-];
+// ==========================================
+// CONVERSION BACKEND -> FRONTEND
+// ==========================================
+
+const mapApiCiterne = (item: CiterneApi): CiterneUI => {
+  if (item.id == null || !Number.isFinite(Number(item.id))) {
+    throw new Error("Identifiant invalide pour une citerne.");
+  }
+
+  // dateFabrication est conservée dans l'interface.
+  // Elle est récupérée si le backend la renvoie.
+  const itemWithDate = item as CiterneApi & {
+    dateFabrication?: string;
+  };
+
+  return {
+    id: Number(item.id),
+    citerneId: item.citerneId,
+    reference: item.reference ?? "",
+    name: item.libelle ?? "",
+    capacite: Number(item.capacity ?? 0),
+    dateFabrication: itemWithDate.dateFabrication ?? "",
+  };
+};
 
 // ==========================================
 // PAGE CONSULTATION DES CITERNES
 // ==========================================
 
 export default function CiternesPage() {
-
   // ==========================================
   // ÉTATS
   // ==========================================
 
-  const [citernes, setCiternes] =
-    useState<Citerne[]>(citernesData);
-
+  const [citernes, setCiternes] = useState<CiterneUI[]>([]);
   const [filteredCiternes, setFilteredCiternes] =
-    useState<Citerne[]>(citernesData);
+    useState<CiterneUI[]>([]);
 
   const [isFormOpen, setIsFormOpen] = useState(false);
 
   const [selectedCiterne, setSelectedCiterne] =
-    useState<Citerne | null>(null);
+    useState<CiterneUI | null>(null);
+
+  const [loading, setLoading] = useState(false);
+  const [actionLoading, setActionLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+
+  // ==========================================
+  // CHARGER LES CITERNES
+  // GET /citerne/getListBean
+  // ==========================================
+
+  const fetchCiternes = useCallback(async () => {
+    try {
+      setLoading(true);
+      setErrorMessage("");
+
+      const data = await getListBean();
+
+      const result = data.map(mapApiCiterne);
+
+      setCiternes(result);
+      setFilteredCiternes(result);
+    } catch (error) {
+      console.error("Erreur chargement des citernes :", error);
+
+      setErrorMessage(
+        "Impossible de récupérer les citernes depuis le serveur."
+      );
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // ==========================================
+  // CHARGEMENT INITIAL
+  // ==========================================
+
+  useEffect(() => {
+    fetchCiternes();
+  }, [fetchCiternes]);
+
+  // ==========================================
+  // FILTRES DES CITERNES
+  // ==========================================
+
+  const citerneFilters: FilterField[] = useMemo(() => {
+    const capacities = [
+      ...new Set(citernes.map((citerne) => citerne.capacite)),
+    ].sort((a, b) => a - b);
+
+    return [
+      {
+        type: "search",
+        name: "reference",
+        label: "Référence",
+        placeholder: "Rechercher par référence...",
+      },
+      {
+        type: "select",
+        name: "capacite",
+        label: "Capacité (L)",
+        placeholder: "Toutes les capacités",
+        icon: Layers,
+        options: capacities.map((capacite) => ({
+          label: `${capacite.toLocaleString("fr-FR")} L`,
+          value: String(capacite),
+        })),
+      },
+    ];
+  }, [citernes]);
 
   // ==========================================
   // OUVRIR LE FORMULAIRE D'AJOUT
@@ -90,11 +169,28 @@ export default function CiternesPage() {
 
   // ==========================================
   // OUVRIR LE FORMULAIRE DE MODIFICATION
+  // GET /citerne/getId/{id}
   // ==========================================
 
-  const handleEdit = (citerne: Citerne) => {
-    setSelectedCiterne(citerne);
-    setIsFormOpen(true);
+  const handleEdit = async (citerne: CiterneUI) => {
+    try {
+      setActionLoading(true);
+      setErrorMessage("");
+
+      const data = await getCiterneById(citerne.id);
+      const mappedCiterne = mapApiCiterne(data);
+
+      setSelectedCiterne(mappedCiterne);
+      setIsFormOpen(true);
+    } catch (error) {
+      console.error("Erreur récupération de la citerne :", error);
+
+      setErrorMessage(
+        "Impossible de récupérer les informations de cette citerne."
+      );
+    } finally {
+      setActionLoading(false);
+    }
   };
 
   // ==========================================
@@ -108,85 +204,48 @@ export default function CiternesPage() {
 
   // ==========================================
   // ENREGISTRER : AJOUT / MODIFICATION
+  // POST /citerne/save
+  // POST /citerne/update
   // ==========================================
 
-  const handleSave = (values: FormValues) => {
+  // ==========================================
+// ACTUALISER LA LISTE APRÈS ENREGISTREMENT
+// ==========================================
 
-    if (selectedCiterne) {
-
-      // MODIFICATION
-
-      const updatedCiterne: Citerne = {
-        ...selectedCiterne,
-        reference: values.reference.trim(),
-        name: values.name.trim(),
-        capacite: Number(values.capacite),
-        dateFabrication: values.dateFabrication,
-      };
-
-      const updatedCiternes = citernes.map((citerne) =>
-        citerne.id === selectedCiterne.id
-          ? updatedCiterne
-          : citerne
-      );
-
-      setCiternes(updatedCiternes);
-      setFilteredCiternes((previous) =>
-        previous.map((citerne) =>
-          citerne.id === selectedCiterne.id
-            ? updatedCiterne
-            : citerne
-        )
-      );
-
-    } else {
-
-      // AJOUT
-
-      const newCiterne: Citerne = {
-        id:
-          Math.max(0, ...citernes.map((citerne) => citerne.id)) + 1,
-        reference: values.reference.trim(),
-        name: values.name.trim(),
-        capacite: Number(values.capacite),
-        dateFabrication: values.dateFabrication,
-      };
-
-      setCiternes((previous) => [
-        ...previous,
-        newCiterne,
-      ]);
-
-      setFilteredCiternes((previous) => [
-        ...previous,
-        newCiterne,
-      ]);
-    }
-
-    handleCancel();
-  };
+const handleSave = async (_values: FormValues) => {
+  await fetchCiternes();
+  handleCancel();
+};
 
   // ==========================================
   // SUPPRIMER UNE CITERNE
+  // POST /citerne/delete/{id}
   // ==========================================
 
-  const handleDelete = (citerne: Citerne) => {
-
+  const handleDelete = async (citerne: CiterneUI) => {
     const confirmed = window.confirm(
       `Voulez-vous vraiment supprimer la citerne "${citerne.reference}" ?`
     );
 
     if (!confirmed) return;
 
-    const updatedCiternes = citernes.filter(
-      (item) => item.id !== citerne.id
-    );
+    try {
+      setActionLoading(true);
+      setErrorMessage("");
 
-    setCiternes(updatedCiternes);
+      await deleteCiterne(citerne.id);
 
-    setFilteredCiternes((previous) =>
-      previous.filter((item) => item.id !== citerne.id)
-    );
+      // Actualiser la liste depuis le backend
+      await fetchCiternes();
+    } catch (error) {
+      console.error("Erreur suppression citerne :", error);
+
+      setErrorMessage(
+        "Impossible de supprimer cette citerne."
+      );
+    } finally {
+      setActionLoading(false);
+    }
   };
 
   // ==========================================
@@ -194,18 +253,12 @@ export default function CiternesPage() {
   // ==========================================
 
   const handleFilter = (filters: FilterValues) => {
-
     const result = citernes.filter((citerne) => {
-
-      // Recherche par référence
-
       const matchesReference =
         !filters.reference ||
         citerne.reference
           .toLowerCase()
-          .includes(filters.reference.toLowerCase());
-
-      // Filtre par capacité
+          .includes(String(filters.reference).toLowerCase());
 
       const matchesCapacity =
         !filters.capacite ||
@@ -232,15 +285,25 @@ export default function CiternesPage() {
   if (isFormOpen) {
     return (
       <div className="mx-auto w-full max-w-[1450px] space-y-4">
-
         <AjouterModifierPage
           citerne={selectedCiterne}
           onSave={handleSave}
           onCancel={handleCancel}
         />
 
-        <Footer />
+        {actionLoading && (
+          <p className="text-sm text-gray-500">
+            Enregistrement en cours...
+          </p>
+        )}
 
+        {errorMessage && (
+          <p className="text-sm text-red-600">
+            {errorMessage}
+          </p>
+        )}
+
+        <Footer />
       </div>
     );
   }
@@ -249,7 +312,7 @@ export default function CiternesPage() {
   // COLONNES DU TABLEAU
   // ==========================================
 
-  const citerneColumns: TableColumn<Citerne>[] = [
+  const citerneColumns: TableColumn<CiterneUI>[] = [
     {
       key: "reference",
       title: "Référence",
@@ -324,13 +387,24 @@ export default function CiternesPage() {
         onReset={handleReset}
       />
 
+      {/* MESSAGE D'ERREUR */}
+
+      {errorMessage && (
+        <p className="text-sm text-red-600">
+          {errorMessage}
+        </p>
+      )}
+
       {/* TABLEAU DES CITERNES */}
 
       <Card padding="md">
-
         <div className="mt-4">
 
-          {filteredCiternes.length > 0 ? (
+          {loading ? (
+            <div className="py-8 text-center text-gray-500">
+              Chargement des citernes...
+            </div>
+          ) : filteredCiternes.length > 0 ? (
 
             <Pagination
               key={filteredCiternes
@@ -340,7 +414,6 @@ export default function CiternesPage() {
               pageSize={7}
             >
               {(paginatedCiternes) => (
-
                 <DataTableSection
                   title="Citernes"
                   badgeLabel={`${filteredCiternes.length} citernes`}
@@ -349,7 +422,6 @@ export default function CiternesPage() {
                   getRowKey={(row) => row.id}
                   minWidth="700px"
                 />
-
               )}
             </Pagination>
 
@@ -358,13 +430,16 @@ export default function CiternesPage() {
             <EmptyState
               icon={<ReceiptText size={30} />}
               title="Aucune citerne trouvée"
-              description="Essayez de modifier vos critères de filtrage."
+              description={
+                citernes.length === 0
+                  ? "Aucune citerne n'est disponible."
+                  : "Essayez de modifier vos critères de filtrage."
+              }
             />
 
           )}
 
         </div>
-
       </Card>
 
       {/* FOOTER */}

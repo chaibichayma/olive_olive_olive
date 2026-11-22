@@ -1,5 +1,5 @@
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { CalendarDays } from "lucide-react";
 
 import { FormPageLayout } from "../../components/forms";
@@ -9,6 +9,13 @@ import type {
 } from "../../components/forms";
 
 import type { Saison } from "./types/saison.types";
+
+import {
+  saveSaison,
+  updateSaison,
+} from "../../services/saisonService";
+
+import type { SaisonRequest } from "../../models/saison.model";
 
 // ==========================================
 // PROPRIÉTÉS
@@ -29,6 +36,8 @@ export default function AjouterModifierPage({
   onSave,
   onCancel,
 }: AjouterModifierPageProps) {
+  const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   // ==========================================
   // VALEURS INITIALES
@@ -78,9 +87,6 @@ export default function AjouterModifierPage({
       columns: 2,
 
       fields: [
-
-        // PREMIÈRE LIGNE
-
         {
           name: "beginDate",
           label: "Date début saison",
@@ -93,9 +99,6 @@ export default function AjouterModifierPage({
           type: "date",
           required: true,
         },
-
-        // DEUXIÈME LIGNE
-
         {
           name: "year",
           label: "Année de la saison",
@@ -120,9 +123,6 @@ export default function AjouterModifierPage({
             },
           ],
         },
-
-        // TROISIÈME LIGNE
-
         {
           name: "priceKilo",
           label: "Prix de production / Kg olives",
@@ -137,9 +137,6 @@ export default function AjouterModifierPage({
           placeholder: "0.000",
           required: true,
         },
-
-        // QUATRIÈME LIGNE
-
         {
           name: "priceVente",
           label: "Prix de vente / L huile",
@@ -159,40 +156,117 @@ export default function AjouterModifierPage({
   ];
 
   // ==========================================
-  // ENREGISTRER
+  // ENREGISTRER : AJOUT OU MODIFICATION
   // ==========================================
 
-  const handleSubmit = (values: FormValues) => {
+  
+const handleSubmit = async (values: FormValues) => {
+  try {
+    setLoading(true);
+    setErrorMessage("");
+
+    const isEditing = saison?.id != null;
+
+    // Vérifier l'identifiant en mode modification
+    let saisonId: number | undefined;
+
+    if (isEditing) {
+      saisonId = Number(saison.id);
+
+      if (!Number.isInteger(saisonId) || saisonId <= 0) {
+        throw new Error("Identifiant de saison invalide.");
+      }
+    }
+
+    // Préparer les données pour le backend
+    const saisonData: SaisonRequest = {
+      searche: String(values.searche ?? ""),
+      beginDate: String(values.beginDate ?? ""),
+      endDate: String(values.endDate ?? ""),
+      statusId: Number(values.statusId),
+      year: Number(values.year),
+      priceKilo: Number(values.priceKilo),
+      priceAchat: Number(values.priceAchat),
+      priceVente: Number(values.priceVente),
+      nbreCaisses: Number(values.nbreCaisses),
+
+      ...(isEditing && {
+        id: saisonId,
+      }),
+    };
+
+    console.log("Données envoyées au backend :", saisonData);
+
+    if (isEditing) {
+      // Modification
+      await updateSaison(saisonData);
+      console.log("Saison modifiée avec succès");
+    } else {
+      // Création
+      await saveSaison(saisonData);
+      console.log("Saison créée avec succès");
+    }
+
+    // Actualiser la liste dans le composant parent
     onSave(values);
-  };
+
+  } catch (error) {
+    console.error(
+      "Erreur lors de l'enregistrement de la saison :",
+      error
+    );
+
+    setErrorMessage(
+      "Une erreur est survenue lors de l'enregistrement de la saison. Veuillez réessayer."
+    );
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   // ==========================================
   // AFFICHAGE
   // ==========================================
 
   return (
-    <FormPageLayout
-      title={
-        saison
-          ? "Modifier la saison"
-          : "Ajouter une saison"
-      }
-      description={
-        saison
-          ? "Modifiez les informations de la saison."
-          : "Remplissez le formulaire pour créer une nouvelle saison."
-      }
-      icon={<CalendarDays size={20} />}
-      sections={sections}
-      initialValues={initialValues}
-      submitLabel={
-        saison
-          ? "Enregistrer les modifications"
-          : "Ajouter la saison"
-      }
-      onSubmit={handleSubmit}
-      onCancel={onCancel}
-    />
+    <div className="space-y-4">
+      {errorMessage && (
+        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-300">
+          {errorMessage}
+        </div>
+      )}
+
+      {loading && (
+        <p className="text-sm text-[#47785B] dark:text-[#91C5A1]">
+          Enregistrement en cours...
+        </p>
+      )}
+
+      <FormPageLayout
+        title={
+          saison
+            ? "Modifier la saison"
+            : "Ajouter une saison"
+        }
+        description={
+          saison
+            ? "Modifiez les informations de la saison."
+            : "Remplissez le formulaire pour créer une nouvelle saison."
+        }
+        icon={<CalendarDays size={20} />}
+        sections={sections}
+        initialValues={initialValues}
+        submitLabel={
+          loading
+            ? "Enregistrement..."
+            : saison
+              ? "Enregistrer les modifications"
+              : "Ajouter la saison"
+        }
+        onSubmit={handleSubmit}
+        onCancel={onCancel}
+      />
+    </div>
   );
 }
-

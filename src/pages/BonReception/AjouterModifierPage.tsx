@@ -9,10 +9,28 @@ import type {
 } from "../../components/forms";
 
 import type { BonReception } from "./types/bonReception.types";
-import { comptesData } from "../compte/data/compte.data";
 
 import CaisseSelector from "../../components/bonReception/CaisseSelector";
 import CompteHistory from "../../components/bonReception/CompteHistory";
+
+import {
+  getComptesBase,
+  getCompteByPhone,
+  createBonReception,
+} from "../../services/bonReceptionService";
+
+import type { BonReceptionRequest } from "../../models/bonReception.model";
+
+// ==========================================
+// TYPES DES COMPTES
+// ==========================================
+
+interface CompteOption {
+  id: number;
+  name: string;
+  mobile: string;
+  isBaseCompte: boolean;
+}
 
 // ==========================================
 // PROPS
@@ -20,7 +38,7 @@ import CompteHistory from "../../components/bonReception/CompteHistory";
 
 interface AjouterModifierPageProps {
   bonReception?: BonReception | null;
-  onSave: (values: FormValues) => void;
+  onSave: (values: FormValues) => void | Promise<void>;
   onCancel: () => void;
 }
 
@@ -35,6 +53,18 @@ const formatDateTimeLocal = (
   return value.slice(0, 16);
 };
 
+const convertDateToISO = (
+  value?: string
+): string | undefined => {
+  if (!value) return undefined;
+
+  const date = new Date(value);
+
+  return Number.isNaN(date.getTime())
+    ? undefined
+    : date.toISOString();
+};
+
 // ==========================================
 // FORMATAGE DES CAISSES
 // ==========================================
@@ -46,6 +76,22 @@ const formatCaisses = (value?: string | null): string[] => {
     .split(",")
     .map((caisse) => caisse.trim())
     .filter(Boolean);
+};
+
+// ==========================================
+// CONVERSION DES NOMBRES
+// ==========================================
+
+const toNumber = (
+  value: unknown
+): number | undefined => {
+  if (value === undefined || value === null || value === "") {
+    return undefined;
+  }
+
+  const number = Number(value);
+
+  return Number.isFinite(number) ? number : undefined;
 };
 
 // ==========================================
@@ -111,19 +157,66 @@ export default function AjouterModifierPage({
   const [formInitialValues, setFormInitialValues] =
     useState<FormValues>(() => initialValues(bonReception));
 
-  const [matchedCompte, setMatchedCompte] = useState(
-    () =>
-      comptesData.find(
-        (compte) =>
-          compte.id.toString() ===
-          bonReception?.compteId?.toString()
-      ) ?? null
-  );
+  const [comptes, setComptes] = useState<CompteOption[]>([]);
 
-  // Sélection multiple des caisses
+  const [matchedCompte, setMatchedCompte] =
+    useState<CompteOption | null>(null);
+
   const [selectedCaisses, setSelectedCaisses] = useState<string[]>(
     () => formatCaisses(bonReception?.caisse)
   );
+
+  const [loading, setLoading] = useState(false);
+  const [loadingComptes, setLoadingComptes] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+
+  // ==========================================
+  // RÉCUPÉRER LES COMPTES DE BASE
+  // GET /reception/doCompteBaseFilter
+  // ==========================================
+
+  useEffect(() => {
+    const fetchComptes = async () => {
+      try {
+        setLoadingComptes(true);
+
+        const response = await getComptesBase();
+
+        const result: CompteOption[] = (Array.isArray(response)
+          ? response
+          : []
+        ).map((item: any) => ({
+          id: Number(item.id),
+          name: item.name ?? item.libelle ?? "",
+          mobile: item.mobile ?? "",
+          isBaseCompte: Boolean(item.isBaseCompte),
+        })).filter((item: CompteOption) =>
+          Number.isFinite(item.id) && item.id > 0
+        );
+
+        setComptes(result);
+
+        const selected = result.find(
+          (item) =>
+            item.id.toString() ===
+            bonReception?.compteId?.toString()
+        );
+
+        if (selected) {
+          setMatchedCompte(selected);
+        }
+      } catch (error) {
+        console.error("Erreur chargement des comptes :", error);
+        setErrorMessage(
+          "Impossible de récupérer les comptes de base."
+        );
+      } finally {
+        setLoadingComptes(false);
+      }
+    };
+
+    fetchComptes();
+  }, [bonReception]);
 
   // ==========================================
   // SYNCHRONISATION
@@ -132,55 +225,73 @@ export default function AjouterModifierPage({
   useEffect(() => {
     setFormInitialValues(initialValues(bonReception));
 
-    const compte = comptesData.find(
-      (item) =>
-        item.id.toString() ===
-        bonReception?.compteId?.toString()
-    );
+    setSelectedCaisses(formatCaisses(bonReception?.caisse));
 
-    setMatchedCompte(compte ?? null);
-
-    setSelectedCaisses(
-      formatCaisses(bonReception?.caisse)
-    );
+    setErrorMessage("");
   }, [bonReception]);
 
   // ==========================================
   // RECHERCHE DU COMPTE PAR TÉLÉPHONE
+  // GET /reception/getCompte?phone=...
   // ==========================================
 
   const handleValuesChange = (
     values: FormValues
   ): FormValues | void => {
-    const phone = (values.mobile ?? "").replace(/\s/g, "");
+    const phone = String(values.mobile ?? "").replace(/\s/g, "");
 
     if (!phone) {
       setMatchedCompte(null);
-
       return {
         compteId: "",
       };
     }
 
-    const compte = comptesData.find(
+    // Recherche dans les comptes déjà chargés
+    const compteLocal = comptes.find(
       (item) =>
         item.mobile.replace(/\s/g, "") === phone
     );
 
-    setMatchedCompte(compte ?? null);
+    if (compteLocal) {
+      setMatchedCompte(compteLocal);
 
-    if (compte) {
       return {
-        compteId: compte.id.toString(),
-        name: compte.name,
-        mobile: compte.mobile,
-        isBaseCompte: compte.isBaseCompte.toString(),
+        compteId: compteLocal.id.toString(),
+        name: compteLocal.name,
+        mobile: compteLocal.mobile,
+        isBaseCompte: compteLocal.isBaseCompte.toString(),
       };
     }
 
-    return {
-      compteId: "",
-    };
+    // Recherche auprès du backend
+    if (phone.length >= 8) {
+      getCompteByPhone(phone)
+        .then((response: any) => {
+          const item = Array.isArray(response)
+            ? response[0]
+            : response;
+
+          if (!item) {
+            setMatchedCompte(null);
+            return;
+          }
+
+          const compte: CompteOption = {
+            id: Number(item.id),
+            name: item.name ?? item.libelle ?? "",
+            mobile: item.mobile ?? phone,
+            isBaseCompte: Boolean(item.isBaseCompte),
+          };
+
+          if (Number.isFinite(compte.id) && compte.id > 0) {
+            setMatchedCompte(compte);
+          }
+        })
+        .catch((error) => {
+          console.error("Erreur recherche du compte :", error);
+        });
+    }
   };
 
   // ==========================================
@@ -207,9 +318,11 @@ export default function AjouterModifierPage({
           name: "compteId",
           label: "Compte",
           type: "select",
-          placeholder: "Sélectionner un compte",
+          placeholder: loadingComptes
+            ? "Chargement des comptes..."
+            : "Sélectionner un compte",
           required: true,
-          options: comptesData.map((compte) => ({
+          options: comptes.map((compte) => ({
             label: compte.name,
             value: compte.id.toString(),
           })),
@@ -271,12 +384,10 @@ export default function AjouterModifierPage({
   const extraContent = (
     <div className="space-y-4">
 
-      {/* HISTORIQUE DU COMPTE */}
       {(isEditing || matchedCompte !== null) && (
         <CompteHistory />
       )}
 
-      {/* SÉLECTION MULTIPLE DES CAISSES */}
       <CaisseSelector
         selectedCaisses={selectedCaisses}
         onChange={setSelectedCaisses}
@@ -286,14 +397,103 @@ export default function AjouterModifierPage({
   );
 
   // ==========================================
-  // ENREGISTREMENT
+  // ENREGISTRER UN BON DE RÉCEPTION
+  // POST /reception/create
   // ==========================================
 
-  const handleSubmit = (values: FormValues) => {
-    onSave({
-      ...values,
-      caisse: selectedCaisses.join(","),
-    });
+  const handleSubmit = async (values: FormValues) => {
+    if (loading) return;
+
+    setErrorMessage("");
+
+    try {
+      setLoading(true);
+
+      // La modification nécessite un endpoint update
+      // qui n'a pas encore été identifié dans Swagger.
+      if (isEditing) {
+        setErrorMessage(
+          "La modification nécessite l'endpoint update du backend. Il n'a pas encore été identifié dans Swagger."
+        );
+        return;
+      }
+
+      const compteId = toNumber(values.compteId);
+
+      if (!compteId) {
+        setErrorMessage("Veuillez sélectionner un compte.");
+        return;
+      }
+
+      if (!String(values.reference ?? "").trim()) {
+        setErrorMessage("Veuillez saisir la référence du bon.");
+        return;
+      }
+
+      const data: BonReceptionRequest = {
+        reference: String(values.reference ?? "").trim(),
+        compteId,
+
+        name: String(values.name ?? "").trim(),
+        mobile: String(values.mobile ?? "").trim(),
+
+        quantityOlive: toNumber(values.quantityOlive),
+        quantityOil: toNumber(values.quantityOil),
+
+        priceKg: toNumber(values.priceKg),
+        price: toNumber(values.price),
+        payement: toNumber(values.payement),
+        acompte: toNumber(values.acompte),
+        priceOil: toNumber(values.priceOil),
+
+        statusId: String(values.statusId ?? ""),
+        statusLib: String(values.statusLib ?? ""),
+
+        caisse: selectedCaisses.join(","),
+
+        natureId: toNumber(values.natureId),
+        typeHuile: toNumber(values.typeHuile),
+
+        isBaseCompte: values.isBaseCompte === "true",
+
+        observation: String(values.observation ?? ""),
+
+        dateCreation: convertDateToISO(
+          String(values.dateCreation ?? "")
+        ),
+        dateDebProduction: convertDateToISO(
+          String(values.dateDebProduction ?? "")
+        ),
+        dateFinProduction: convertDateToISO(
+          String(values.dateFinProduction ?? "")
+        ),
+      };
+
+      // Création via API
+      await createBonReception(data);
+
+      console.log("Bon de réception créé avec succès.");
+
+      // Actualiser la liste dans la page parent
+      await onSave({
+        ...values,
+        caisse: selectedCaisses.join(","),
+      });
+
+    } catch (error: any) {
+      console.error("Erreur création du bon :", {
+        status: error.response?.status,
+        data: error.response?.data,
+        message: error.message,
+      });
+
+      setErrorMessage(
+        error.response?.data?.message ??
+          "Une erreur est survenue lors de la création du bon de réception."
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
   // ==========================================
@@ -301,29 +501,40 @@ export default function AjouterModifierPage({
   // ==========================================
 
   return (
-    <FormPageLayout
-      title={
-        isEditing
-          ? "Modifier le bon de réception"
-          : "Ajouter un bon de réception"
-      }
-      description={
-        isEditing
-          ? "Modifier les informations du bon de réception."
-          : "Remplir les informations pour créer un nouveau bon de réception."
-      }
-      icon={<ReceiptText size={20} />}
-      sections={sections}
-      initialValues={formInitialValues}
-      onValuesChange={handleValuesChange}
-      extraContent={extraContent}
-      onSubmit={handleSubmit}
-      onCancel={onCancel}
-      submitLabel={
-        isEditing
-          ? "Enregistrer les modifications"
-          : "Ajouter"
-      }
-    />
+    <div className="space-y-4">
+
+      {errorMessage && (
+        <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300">
+          {errorMessage}
+        </div>
+      )}
+
+      <FormPageLayout
+        title={
+          isEditing
+            ? "Modifier le bon de réception"
+            : "Ajouter un bon de réception"
+        }
+        description={
+          isEditing
+            ? "Modifier les informations du bon de réception."
+            : "Remplir les informations pour créer un nouveau bon de réception."
+        }
+        icon={<ReceiptText size={20} />}
+        sections={sections}
+        initialValues={formInitialValues}
+        onValuesChange={handleValuesChange}
+        extraContent={extraContent}
+        onSubmit={handleSubmit}
+        onCancel={onCancel}
+        submitLabel={
+          loading
+            ? "Enregistrement..."
+            : isEditing
+              ? "Enregistrer les modifications"
+              : "Ajouter"
+        }
+      />
+    </div>
   );
 }

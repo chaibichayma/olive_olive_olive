@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Users,
   Search,
@@ -11,7 +11,6 @@ import {
 import { Card } from "../../components/ui";
 import { PageHeader } from "../../components/common";
 
-import { comptesData } from "./data/compte.data";
 import type { Compte } from "./types/compte.types";
 
 import Footer from "../../components/common/Footer";
@@ -29,66 +28,153 @@ import ContactCards from "../../components/common/ContactCards";
 import AjouterModifierPage from "./AjouterModifierPage";
 import type { FormValues } from "../../components/forms";
 
+import {
+  getListBean,
+  getCompteById,
+  deleteCompte,
+} from "../../services/compteService";
+
+import type {
+  Compte as CompteApi,
+} from "../../models/compte.model";
+
 // ==========================================
-// FILTRES DES COMPTES
+// CONVERSION BACKEND -> FRONTEND
 // ==========================================
 
-const statusOptions = [
-  ...new Set(comptesData.map((compte) => compte.statusId)),
-].sort((a, b) => a - b);
+const mapApiCompte = (item: CompteApi): Compte => {
+  console.log("Compte reçu du backend :", item);
 
-const compteFilters: FilterField[] = [
-  {
-    type: "search",
-    name: "name",
-    label: "Nom du compte",
-    placeholder: "Rechercher par nom...",
-    icon: Search,
-  },
-  {
-    type: "search",
-    name: "mobile",
-    label: "Téléphone",
-    placeholder: "Rechercher par téléphone...",
-  },
-  {
-    type: "select",
-    name: "statusId",
-    label: "Statut",
-    placeholder: "Tous les statuts",
-    icon: CircleCheck,
-    options: statusOptions.map((statusId) => ({
-      label: `Statut ${statusId}`,
-      value: String(statusId),
-    })),
-  },
-  {
-    type: "select",
-    name: "isBaseCompte",
-    label: "Type de compte",
-    placeholder: "Tous les types",
-    icon: Layers,
-    options: [
-      { label: "Compte de base", value: "true" },
-      { label: "Compte rattaché", value: "false" },
-    ],
-  },
-];
+  const rawId = item.id ?? item.compteId;
+
+  if (rawId == null || !Number.isFinite(Number(rawId))) {
+    console.error("Identifiant manquant :", item);
+    throw new Error("Identifiant invalide pour un compte.");
+  }
+
+  return {
+    id: Number(rawId),
+    reference: item.reference ?? "",
+    name: item.name ?? "",
+    adresse: "",
+    mobile: item.mobile ?? "",
+    mail: "",
+    statusId: 1,
+    priceConv: item.priceKg ?? null,
+    isBaseCompte: item.isBaseCompte ?? true,
+    baseCompteId: null,
+    image: "",
+  };
+};
 
 // ==========================================
 // PAGE CONSULTATION DES COMPTES
 // ==========================================
 
 export default function ComptesPage() {
-  const [comptes, setComptes] = useState<Compte[]>(comptesData);
+
+  // ==========================================
+  // ÉTATS
+  // ==========================================
+
+  const [comptes, setComptes] = useState<Compte[]>([]);
 
   const [filteredComptes, setFilteredComptes] =
-    useState<Compte[]>(comptesData);
+    useState<Compte[]>([]);
 
   const [isFormOpen, setIsFormOpen] = useState(false);
 
   const [selectedCompte, setSelectedCompte] =
     useState<Compte | null>(null);
+
+  const [loading, setLoading] = useState(false);
+  const [actionLoading, setActionLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+
+  // ==========================================
+  // CHARGER LES COMPTES
+  // GET /compte/getListBean
+  // ==========================================
+
+  const fetchComptes = useCallback(async () => {
+    try {
+      setLoading(true);
+      setErrorMessage("");
+
+      const data = await getListBean();
+
+      const result = data.map(mapApiCompte);
+
+      setComptes(result);
+      setFilteredComptes(result);
+
+    } catch (error) {
+      console.error("Erreur chargement des comptes :", error);
+
+      setErrorMessage(
+        "Impossible de récupérer les comptes depuis le serveur."
+      );
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // ==========================================
+  // CHARGEMENT INITIAL
+  // ==========================================
+
+  useEffect(() => {
+    fetchComptes();
+  }, [fetchComptes]);
+
+  // ==========================================
+  // FILTRES DES COMPTES
+  // ==========================================
+
+  const compteFilters: FilterField[] = useMemo(() => {
+
+    const statusOptions = [
+      ...new Set(comptes.map((compte) => compte.statusId)),
+    ].sort((a, b) => a - b);
+
+    return [
+      {
+        type: "search",
+        name: "name",
+        label: "Nom du compte",
+        placeholder: "Rechercher par nom...",
+        icon: Search,
+      },
+      {
+        type: "search",
+        name: "mobile",
+        label: "Téléphone",
+        placeholder: "Rechercher par téléphone...",
+      },
+      {
+        type: "select",
+        name: "statusId",
+        label: "Statut",
+        placeholder: "Tous les statuts",
+        icon: CircleCheck,
+        options: statusOptions.map((statusId) => ({
+          label: `Statut ${statusId}`,
+          value: String(statusId),
+        })),
+      },
+      {
+        type: "select",
+        name: "isBaseCompte",
+        label: "Type de compte",
+        placeholder: "Tous les types",
+        icon: Layers,
+        options: [
+          { label: "Compte de base", value: "true" },
+          { label: "Compte rattaché", value: "false" },
+        ],
+      },
+    ];
+  }, [comptes]);
 
   // ==========================================
   // OUVRIR LE FORMULAIRE D'AJOUT
@@ -96,16 +182,36 @@ export default function ComptesPage() {
 
   const handleAdd = () => {
     setSelectedCompte(null);
+    setErrorMessage("");
     setIsFormOpen(true);
   };
 
   // ==========================================
   // OUVRIR LE FORMULAIRE DE MODIFICATION
+  // GET /compte/getId/{id}
   // ==========================================
 
-  const handleEdit = (compte: Compte) => {
-    setSelectedCompte(compte);
-    setIsFormOpen(true);
+  const handleEdit = async (compte: Compte) => {
+    try {
+      setActionLoading(true);
+      setErrorMessage("");
+
+      const data = await getCompteById(compte.id);
+
+      const mappedCompte = mapApiCompte(data);
+
+      setSelectedCompte(mappedCompte);
+      setIsFormOpen(true);
+
+    } catch (error) {
+      console.error("Erreur récupération du compte :", error);
+
+      setErrorMessage(
+        "Impossible de récupérer les informations de ce compte."
+      );
+    } finally {
+      setActionLoading(false);
+    }
   };
 
   // ==========================================
@@ -115,92 +221,56 @@ export default function ComptesPage() {
   const handleCancel = () => {
     setIsFormOpen(false);
     setSelectedCompte(null);
+    setErrorMessage("");
   };
 
   // ==========================================
-  // ENREGISTRER : AJOUT / MODIFICATION
+  // ACTUALISER APRÈS AJOUT / MODIFICATION
+  // Les appels save/update sont dans le formulaire.
   // ==========================================
 
-  const handleSave = (values: FormValues) => {
-    if (selectedCompte) {
-      // MODIFICATION
-
-      const updatedCompte: Compte = {
-        ...selectedCompte,
-        name: values.name ?? "",
-        adresse: values.adresse ?? "",
-        mobile: values.mobile ?? "",
-        mail: values.mail ?? "",
-        statusId: Number(values.statusId),
-        priceConv: values.priceConv
-          ? Number(values.priceConv)
-          : null,
-        isBaseCompte: values.isBaseCompte === "true",
-        baseCompteId: values.baseCompteId
-          ? Number(values.baseCompteId)
-          : null,
-      };
-
-      const updatedComptes = comptes.map((compte) =>
-        compte.id === selectedCompte.id
-          ? updatedCompte
-          : compte
-      );
-
-      setComptes(updatedComptes);
-      setFilteredComptes((previous) =>
-        previous.map((compte) =>
-          compte.id === selectedCompte.id
-            ? updatedCompte
-            : compte
-        )
-      );
-    } else {
-      // AJOUT
-
-      const newCompte: Compte = {
-        id: Math.max(0, ...comptes.map((compte) => compte.id)) + 1,
-        name: values.name ?? "",
-        adresse: values.adresse ?? "",
-        mobile: values.mobile ?? "",
-        mail: values.mail ?? "",
-        statusId: Number(values.statusId),
-        priceConv: values.priceConv
-          ? Number(values.priceConv)
-          : null,
-        isBaseCompte: values.isBaseCompte === "true",
-        baseCompteId: values.baseCompteId
-          ? Number(values.baseCompteId)
-          : null,
-        image: "https://i.pravatar.cc/120?img=12",
-      };
-
-      setComptes((previous) => [...previous, newCompte]);
-      setFilteredComptes((previous) => [...previous, newCompte]);
-    }
-
+  const handleSave = async (_values: FormValues) => {
+    await fetchComptes();
     handleCancel();
   };
 
   // ==========================================
   // SUPPRIMER UN COMPTE
+  // POST /compte/delete/{id}
   // ==========================================
 
-  const handleDelete = (compte: Compte) => {
+  const handleDelete = async (compte: Compte) => {
+
     const confirmed = window.confirm(
       `Voulez-vous supprimer le compte "${compte.name}" ?`
     );
 
     if (!confirmed) return;
 
-    const updatedComptes = comptes.filter(
-      (item) => item.id !== compte.id
-    );
+    try {
+      setActionLoading(true);
+      setErrorMessage("");
 
-    setComptes(updatedComptes);
-    setFilteredComptes((previous) =>
-      previous.filter((item) => item.id !== compte.id)
-    );
+      const response = await deleteCompte(compte.id);
+
+      if (!response.isValid) {
+        throw new Error(
+          response.message || "La suppression du compte a échoué."
+        );
+      }
+
+      // Actualiser la liste depuis le backend
+      await fetchComptes();
+
+    } catch (error) {
+      console.error("Erreur suppression du compte :", error);
+
+      setErrorMessage(
+        "Impossible de supprimer ce compte."
+      );
+    } finally {
+      setActionLoading(false);
+    }
   };
 
   // ==========================================
@@ -208,16 +278,18 @@ export default function ComptesPage() {
   // ==========================================
 
   const handleFilter = (filters: FilterValues) => {
+
     const result = comptes.filter((compte) => {
+
       const matchesName =
         !filters.name ||
         compte.name
           .toLowerCase()
-          .includes(filters.name.toLowerCase());
+          .includes(String(filters.name).toLowerCase());
 
       const matchesMobile =
         !filters.mobile ||
-        compte.mobile.includes(filters.mobile);
+        compte.mobile.includes(String(filters.mobile));
 
       const matchesStatus =
         !filters.statusId ||
@@ -254,13 +326,21 @@ export default function ComptesPage() {
   if (isFormOpen) {
     return (
       <div className="mx-auto w-full max-w-[1450px] space-y-4">
+
         <AjouterModifierPage
           compte={selectedCompte}
           onSave={handleSave}
           onCancel={handleCancel}
         />
 
+        {errorMessage && (
+          <p className="text-sm text-red-600">
+            {errorMessage}
+          </p>
+        )}
+
         <Footer />
+
       </div>
     );
   }
@@ -291,14 +371,31 @@ export default function ComptesPage() {
         onReset={handleReset}
       />
 
+      {/* MESSAGE D'ERREUR */}
+
+      {errorMessage && (
+        <p className="text-sm text-red-600">
+          {errorMessage}
+        </p>
+      )}
+
       {/* CARTES DES COMPTES */}
 
       <Card padding="md">
         <div className="mt-4">
 
-          {filteredComptes.length > 0 ? (
+          {loading ? (
+
+            <div className="py-8 text-center text-gray-500">
+              Chargement des comptes...
+            </div>
+
+          ) : filteredComptes.length > 0 ? (
+
             <Pagination
-              key={filteredComptes.map((item) => item.id).join("-")}
+              key={filteredComptes
+                .map((item) => item.id)
+                .join("-")}
               data={filteredComptes}
               pageSize={8}
             >
@@ -317,12 +414,19 @@ export default function ComptesPage() {
                 />
               )}
             </Pagination>
+
           ) : (
+
             <EmptyState
               icon={<ReceiptText size={30} />}
               title="Aucun compte trouvé"
-              description="Essayez de modifier vos critères de filtrage."
+              description={
+                comptes.length === 0
+                  ? "Aucun compte n'est disponible."
+                  : "Essayez de modifier vos critères de filtrage."
+              }
             />
+
           )}
 
         </div>
@@ -331,6 +435,7 @@ export default function ComptesPage() {
       {/* FOOTER */}
 
       <Footer />
+
     </div>
   );
 }

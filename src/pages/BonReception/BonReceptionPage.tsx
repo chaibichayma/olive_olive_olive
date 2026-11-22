@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   ReceiptText,
   UserRound,
@@ -14,7 +14,6 @@ import DateTimeDisplay from "../../components/common/DateTimeDisplay";
 import EmptyState from "../../components/common/EmptyState";
 import RowActions from "../../components/common/RowActions";
 
-import { bonReceptionData } from "./data/bonReception.data";
 import type { BonReception } from "./types/bonReception.types";
 
 import AjouterModifierPage from "./AjouterModifierPage";
@@ -31,11 +30,30 @@ import type {
   FilterValues,
 } from "../../components/filters";
 
+import {
+  getListBean,
+  deleteBonReception,
+} from "../../services/bonReceptionService";
+
+// ==========================================
+// FORMATAGE SÉCURISÉ DES NOMBRES
+// ==========================================
+
+const formatNumber = (
+  value: number | string | null | undefined
+): string => {
+  const number = Number(value);
+
+  return Number.isFinite(number)
+    ? number.toLocaleString("fr-FR")
+    : "0";
+};
+
 // ==========================================
 // CONVERSION DES DATES
 // ==========================================
 
-function getDateTimestamp(value: string): number | null {
+function getDateTimestamp(value?: string | null): number | null {
   if (!value) return null;
 
   // Format dd/MM/yyyy HH:mm:ss
@@ -75,49 +93,117 @@ function getDateTimestamp(value: string): number | null {
 // ==========================================
 
 export default function BonReceptionPage() {
+
   // ==========================================
   // ÉTATS
   // ==========================================
 
-  const [bons, setBons] = useState<BonReception[]>(bonReceptionData);
+  const [bons, setBons] = useState<BonReception[]>([]);
 
   const [filteredBons, setFilteredBons] =
-    useState<BonReception[]>(bonReceptionData);
+    useState<BonReception[]>([]);
 
   const [isFormOpen, setIsFormOpen] = useState(false);
 
   const [selectedBon, setSelectedBon] =
     useState<BonReception | null>(null);
 
+  const [loading, setLoading] = useState(false);
+  const [actionLoading, setActionLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+
+  // ==========================================
+  // RÉCUPÉRER LES BONS DE RÉCEPTION
+  // GET /reception/getListBean
+  // ==========================================
+
+  const fetchBons = useCallback(async () => {
+    try {
+      setLoading(true);
+      setErrorMessage("");
+
+      const response = await getListBean();
+
+      console.log("Bons reçus depuis l'API :", response);
+
+      // Vérifier que la réponse est un tableau
+      const result = Array.isArray(response)
+        ? (response as unknown as BonReception[])
+        : [];
+
+      console.table(
+        result.map((bon) => ({
+          id: bon.id,
+          reference: bon.reference,
+          quantityOlive: bon.quantityOlive,
+          quantityOil: bon.quantityOil,
+          price: bon.price,
+          payement: bon.payement,
+        }))
+      );
+
+      setBons(result);
+      setFilteredBons(result);
+
+    } catch (error) {
+      console.error(
+        "Erreur chargement des bons de réception :",
+        error
+      );
+
+      setErrorMessage(
+        "Impossible de récupérer les bons de réception depuis le serveur."
+      );
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // ==========================================
+  // CHARGEMENT INITIAL
+  // ==========================================
+
+  useEffect(() => {
+    fetchBons();
+  }, [fetchBons]);
+
   // ==========================================
   // OPTIONS DES FILTRES
   // ==========================================
 
   const compteOptions = [
-    ...new Set(bons.map((bon) => String(bon.compteId))),
-  ].map((id) => ({
-    label: `Compte ${id}`,
-    value: id,
-  }));
+    ...new Set(
+      bons.map((bon) => String(bon.compteId ?? ""))
+    ),
+  ]
+    .filter(Boolean)
+    .map((id) => ({
+      label: `Compte ${id}`,
+      value: id,
+    }));
 
   const natureOptions = [
-    ...new Set(bons.map((bon) => String(bon.natureId))),
-  ].map((id) => ({
-    label: `Nature ${id}`,
-    value: id,
-  }));
+    ...new Set(
+      bons.map((bon) => String(bon.natureId ?? ""))
+    ),
+  ]
+    .filter(Boolean)
+    .map((id) => ({
+      label: `Nature ${id}`,
+      value: id,
+    }));
 
   const statusOptions = Array.from(
     new Map(
       bons.map((bon) => [
-        String(bon.statusId),
+        String(bon.statusId ?? ""),
         {
-          label: bon.statusLib,
-          value: String(bon.statusId),
+          label: bon.statusLib || `Statut ${bon.statusId ?? ""}`,
+          value: String(bon.statusId ?? ""),
         },
       ])
     ).values()
-  );
+  ).filter((option) => option.value !== "");
 
   const bonReceptionFilters: FilterField[] = [
     {
@@ -158,6 +244,7 @@ export default function BonReceptionPage() {
 
   const handleAdd = () => {
     setSelectedBon(null);
+    setErrorMessage("");
     setIsFormOpen(true);
   };
 
@@ -167,6 +254,7 @@ export default function BonReceptionPage() {
 
   const handleEdit = (bon: BonReception) => {
     setSelectedBon(bon);
+    setErrorMessage("");
     setIsFormOpen(true);
   };
 
@@ -177,65 +265,15 @@ export default function BonReceptionPage() {
   const handleCancel = () => {
     setIsFormOpen(false);
     setSelectedBon(null);
+    setErrorMessage("");
   };
 
   // ==========================================
-  // ENREGISTRER UN BON DE RÉCEPTION
+  // ACTUALISER APRÈS ENREGISTREMENT
   // ==========================================
 
-  const handleSave = (values: FormValues) => {
-    const bonId = selectedBon
-      ? selectedBon.id
-      : Math.max(0, ...bons.map((bon) => bon.id)) + 1;
-
-    const newBon: BonReception = {
-      id: bonId,
-
-      reference: values.reference.trim(),
-      compteId: Number(values.compteId),
-
-      name: values.name.trim(),
-      mobile: values.mobile.trim(),
-
-      quantityOil: Number(values.quantityOil),
-      quantityOlive: Number(values.quantityOlive),
-
-      priceKg: Number(values.priceKg),
-      price: Number(values.price),
-      payement: Number(values.payement),
-      acompte: Number(values.acompte),
-
-      statusId: values.statusId,
-      statusLib: values.statusLib.trim(),
-
-      caisse: values.caisse.trim(),
-      natureId: Number(values.natureId),
-
-      priceOil: Number(values.priceOil),
-      observation: values.observation.trim(),
-
-      typeHuile: Number(values.typeHuile),
-      isBaseCompte: values.isBaseCompte === "true",
-
-      dateCreation: values.dateCreation,
-      dateDebProduction: values.dateDebProduction,
-      dateFinProduction: values.dateFinProduction,
-    };
-
-    let updatedBons: BonReception[];
-
-    if (selectedBon) {
-      // MODIFICATION
-      updatedBons = bons.map((bon) =>
-        bon.id === selectedBon.id ? newBon : bon
-      );
-    } else {
-      // AJOUT
-      updatedBons = [...bons, newBon];
-    }
-
-    setBons(updatedBons);
-    setFilteredBons(updatedBons);
+  const handleSave = async (_values: FormValues) => {
+    await fetchBons();
 
     setIsFormOpen(false);
     setSelectedBon(null);
@@ -243,25 +281,42 @@ export default function BonReceptionPage() {
 
   // ==========================================
   // SUPPRIMER UN BON DE RÉCEPTION
+  // POST /reception/delete/{id}
   // ==========================================
 
-  const handleDelete = (bon: BonReception) => {
+  const handleDelete = async (bon: BonReception) => {
     const confirmed = window.confirm(
-      `Voulez-vous vraiment supprimer le bon de réception ${bon.reference} ?`
+      `Voulez-vous vraiment supprimer le bon de réception ${bon.reference ?? ""} ?`
     );
 
     if (!confirmed) return;
 
-    const updatedBons = bons.filter(
-      (item) => item.id !== bon.id
-    );
+    try {
+      setActionLoading(true);
+      setErrorMessage("");
 
-    const updatedFilteredBons = filteredBons.filter(
-      (item) => item.id !== bon.id
-    );
+      const response = await deleteBonReception(bon.id);
 
-    setBons(updatedBons);
-    setFilteredBons(updatedFilteredBons);
+      if (!response.isValid) {
+        throw new Error(
+          response.message || "La suppression a échoué."
+        );
+      }
+
+      await fetchBons();
+
+    } catch (error) {
+      console.error(
+        "Erreur suppression du bon de réception :",
+        error
+      );
+
+      setErrorMessage(
+        "Impossible de supprimer ce bon de réception."
+      );
+    } finally {
+      setActionLoading(false);
+    }
   };
 
   // ==========================================
@@ -274,24 +329,24 @@ export default function BonReceptionPage() {
       // Filtre par référence
       const matchesReference =
         !filters.reference ||
-        bon.reference
+        String(bon.reference ?? "")
           .toLowerCase()
-          .includes(filters.reference.toLowerCase());
+          .includes(String(filters.reference).toLowerCase());
 
       // Filtre par compte
       const matchesCompte =
         !filters.compteId ||
-        String(bon.compteId) === filters.compteId;
+        String(bon.compteId ?? "") === String(filters.compteId);
 
       // Filtre par nature
       const matchesNature =
         !filters.natureId ||
-        String(bon.natureId) === filters.natureId;
+        String(bon.natureId ?? "") === String(filters.natureId);
 
       // Filtre par statut
       const matchesStatus =
         !filters.statusId ||
-        bon.statusId === filters.statusId;
+        String(bon.statusId ?? "") === String(filters.statusId);
 
       // Date de création
       const creationTimestamp = getDateTimestamp(
@@ -356,16 +411,19 @@ export default function BonReceptionPage() {
       key: "reference",
       title: "Référence",
       className: "whitespace-nowrap font-semibold text-[#38453D]",
+      render: (row) => row.reference ?? "-",
     },
     {
       key: "name",
       title: "Nom",
       className: "min-w-[150px]",
+      render: (row) => row.name ?? "-",
     },
     {
       key: "mobile",
       title: "Téléphone",
       className: "whitespace-nowrap",
+      render: (row) => row.mobile ?? "-",
     },
     {
       key: "quantityOlive",
@@ -373,7 +431,7 @@ export default function BonReceptionPage() {
       align: "right",
       className: "whitespace-nowrap",
       render: (row) =>
-        `${row.quantityOlive.toLocaleString("fr-FR")} Kg`,
+        `${formatNumber(row.quantityOlive)} Kg`,
     },
     {
       key: "quantityOil",
@@ -381,7 +439,7 @@ export default function BonReceptionPage() {
       align: "right",
       className: "whitespace-nowrap",
       render: (row) =>
-        `${row.quantityOil.toLocaleString("fr-FR")} L`,
+        `${formatNumber(row.quantityOil)} L`,
     },
     {
       key: "price",
@@ -389,7 +447,7 @@ export default function BonReceptionPage() {
       align: "right",
       className: "whitespace-nowrap font-semibold text-[#46534B]",
       render: (row) =>
-        `${row.price.toLocaleString("fr-FR")} DT`,
+        `${formatNumber(row.price)} DT`,
     },
     {
       key: "payement",
@@ -397,7 +455,7 @@ export default function BonReceptionPage() {
       align: "right",
       className: "whitespace-nowrap",
       render: (row) =>
-        `${row.payement.toLocaleString("fr-FR")} DT`,
+        `${formatNumber(row.payement)} DT`,
     },
     {
       key: "statusLib",
@@ -408,13 +466,13 @@ export default function BonReceptionPage() {
             inline-flex items-center rounded-full px-2.5 py-1
             text-[10px] font-semibold
             ${
-              row.statusId === "1"
+              String(row.statusId) === "1"
                 ? "bg-[#EDF5EF] text-[#47785B]"
                 : "bg-[#F1F3F2] text-[#68756C]"
             }
           `}
         >
-          {row.statusLib}
+          {row.statusLib ?? "-"}
         </span>
       ),
     },
@@ -424,7 +482,7 @@ export default function BonReceptionPage() {
       className: "whitespace-nowrap",
       render: (row) => (
         <DateTimeDisplay
-          value={row.dateCreation}
+          value={row.dateCreation ?? ""}
           showTime
         />
       ),
@@ -497,13 +555,27 @@ export default function BonReceptionPage() {
         onReset={handleReset}
       />
 
+      {/* MESSAGE D'ERREUR */}
+
+      {errorMessage && (
+        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          {errorMessage}
+        </div>
+      )}
+
       {/* TABLEAU DES BONS DE RÉCEPTION */}
 
       <Card padding="md">
 
         <div className="mt-4">
 
-          {filteredBons.length > 0 ? (
+          {loading || actionLoading ? (
+
+            <div className="py-8 text-center text-gray-500">
+              Chargement des bons de réception...
+            </div>
+
+          ) : filteredBons.length > 0 ? (
 
             <Pagination
               key={filteredBons.map((item) => item.id).join("-")}
@@ -527,7 +599,11 @@ export default function BonReceptionPage() {
             <EmptyState
               icon={<ReceiptText size={30} />}
               title="Aucun bon de réception trouvé"
-              description="Essayez de modifier vos critères de recherche."
+              description={
+                bons.length === 0
+                  ? "Aucun bon de réception n'est disponible."
+                  : "Essayez de modifier vos critères de recherche."
+              }
             />
 
           )}
